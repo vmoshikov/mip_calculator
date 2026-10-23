@@ -1,0 +1,50 @@
+{
+  "_comment": "ЗАГЛУШКА. Профили нагрузки для планировщика лимитов. Замените своими данными: длины входа и выхода (p50/p90/p99 токенов) из логов или Prometheus (sglang:prompt_tokens, sglang:generation_tokens), долю попаданий в prefix cache (sglang:cache_hit_rate). Можно задать распределение как lognormal (p50 + p99) или как гистограмму (buckets: [токены, доля]).",
+  "workloads": [
+    {
+      "id": "chat",
+      "name": "Чат (заглушка)",
+      "stub": true,
+      "input": { "distribution": "lognormal", "p50": 2000, "p99": 16000 },
+      "output": { "distribution": "lognormal", "p50": 350, "p99": 2500 },
+      "prefix_cache_hit": 0.3,
+      "note": "Короткие диалоги с системным промптом."
+    },
+    {
+      "id": "agent",
+      "name": "Агенты / код (заглушка)",
+      "stub": true,
+      "input": { "distribution": "lognormal", "p50": 30000, "p99": 120000 },
+      "output": { "distribution": "lognormal", "p50": 800, "p99": 6000 },
+      "prefix_cache_hit": 0.9,
+      "note": "Многошаговые сессии: длинный растущий контекст, высокий prefix cache (в 24-часовом замере DeepSeek-V4.1-Flash — 96,7%)."
+    },
+    {
+      "id": "rag",
+      "name": "RAG / документы (заглушка)",
+      "stub": true,
+      "input": { "distribution": "lognormal", "p50": 8000, "p99": 32000 },
+      "output": { "distribution": "lognormal", "p50": 500, "p99": 2000 },
+      "prefix_cache_hit": 0.15,
+      "note": "Длинный уникальный контекст, мало переиспользования."
+    },
+    {
+      "id": "bench-8k-1k",
+      "name": "Бенчмарк cookbook 8K → 1K (фиксированные длины)",
+      "stub": false,
+      "input": { "distribution": "fixed", "value": 8192 },
+      "output": { "distribution": "fixed", "value": 1024 },
+      "prefix_cache_hit": 0,
+      "note": "Как в замерах cookbook (bench_serving random, --random-range-ratio 1, flush-cache). Для сверки модели с замерами."
+    },
+    {
+      "id": "histogram-example",
+      "name": "Пример гистограммы (заглушка)",
+      "stub": true,
+      "input": { "distribution": "buckets", "buckets": [[1000, 0.35], [4000, 0.3], [16000, 0.2], [64000, 0.12], [128000, 0.03]] },
+      "output": { "distribution": "buckets", "buckets": [[200, 0.4], [800, 0.35], [2000, 0.2], [8000, 0.05]] },
+      "prefix_cache_hit": 0.5,
+      "note": "Формат гистограммы: [токенов, доля запросов]. Доли нормируются автоматически."
+    }
+  ]
+}

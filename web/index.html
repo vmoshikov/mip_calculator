@@ -19,6 +19,7 @@
   </div>
   <nav class="tabs" role="tablist">
     <button class="tab active" data-tab="calc">Калькулятор</button>
+    <button class="tab" data-tab="limits">Лимиты SGLang</button>
     <button class="tab" data-tab="pd">Prefill / Decode</button>
     <button class="tab" data-tab="models">Модели</button>
     <button class="tab" data-tab="matrix">Матрица</button>
@@ -43,8 +44,9 @@
       <label>Контекст на запрос <output id="o-ctx"></output>
         <input type="range" id="f-ctx" min="0" max="9" step="1">
       </label>
-      <label>Параллельных запросов на реплику
+      <label>Одновременных запросов на реплику
         <input type="number" id="f-conc" min="1" max="4096">
+        <span class="hint">запросы в работе (--max-running-requests), не RPS</span>
       </label>
       <div class="row2">
         <label>Реплик <input type="number" id="f-rep" min="1" max="256"></label>
@@ -96,6 +98,95 @@
             <span class="muted">клик — выбрать GPU</span>
           </div>
           <div class="compare" id="compare"></div>
+        </div>
+      </section>
+
+      <!-- Лимиты SGLang -->
+      <section class="view" id="view-limits">
+        <div class="limits-layout">
+          <aside class="panel form" id="lform">
+            <h2>Инсталляция</h2>
+            <label>Модель <select id="l-model"></select></label>
+            <label>Профиль SGLang <select id="l-profile"></select></label>
+            <div class="model-meta" id="l-profile-meta"></div>
+            <label id="l-gpu-wrap" hidden>GPU <select id="l-gpu"></select></label>
+            <div class="row2">
+              <label>Серверов <input type="number" id="l-servers" min="1" value="3"></label>
+              <label>GPU на сервер <input type="number" id="l-gpn" min="1" value="8"></label>
+            </div>
+
+            <h3>Цели</h3>
+            <div class="row2">
+              <label>TTFT P99, с <input type="number" id="l-ttft" min="0.1" step="1" value="40"></label>
+              <label>TPOT P99, мс <input type="number" id="l-tpot" min="0" step="10" placeholder="не задано"></label>
+            </div>
+            <label>Запас от предельного RPS, % <input type="number" id="l-headroom" min="10" max="100" step="5" value="80"></label>
+
+            <h3>Нагрузка</h3>
+            <label>Профиль нагрузки <select id="l-workload"></select></label>
+            <div class="row2">
+              <label>Вход p50 <input type="number" id="l-in50" min="1"></label>
+              <label>Вход p99 <input type="number" id="l-in99" min="1"></label>
+            </div>
+            <div class="row2">
+              <label>Выход p50 <input type="number" id="l-out50" min="1"></label>
+              <label>Выход p99 <input type="number" id="l-out99" min="1"></label>
+            </div>
+            <label>Попадание в prefix cache, % <input type="number" id="l-hit" min="0" max="99" step="5"></label>
+            <p class="hint" id="l-wl-note"></p>
+          </aside>
+
+          <div class="limits-result">
+            <details class="panel glossary">
+              <summary><h2>Термины: одновременные запросы и RPS</h2></summary>
+              <dl>
+                <dt>--max-running-requests</dt>
+                <dd>Сколько запросов инстанс SGLang обрабатывает <b>одновременно</b> (в батче). Остальные ждут в очереди на допуск — это время входит в TTFT.</dd>
+                <dt>RPS</dt>
+                <dd>Входящий поток: сколько новых запросов <b>в секунду</b> приходит на инстанс. По закону Литтла: одновременных ≈ RPS × среднее время запроса.</dd>
+                <dt>TTFT</dt>
+                <dd>Время до первого токена: ожидание допуска + обработка входа (prefill).</dd>
+                <dt>TPOT</dt>
+                <dd>Время на каждый следующий токен ответа; растёт с числом одновременных запросов.</dd>
+                <dt>Инстанс</dt>
+                <dd>Один процесс SGLang на группе GPU (например, TP4 = 4 GPU). Три сервера по 8 GPU при TP4 — это 6 инстансов.</dd>
+              </dl>
+            </details>
+            <div id="l-stubs"></div>
+            <div class="kpis" id="l-kpis"></div>
+            <div class="panel">
+              <div class="panel-head">
+                <h2>TTFT P99 в зависимости от RPS на инстанс</h2>
+                <span class="muted small" id="l-chart-hint"></span>
+              </div>
+              <div id="l-chart" class="chart"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h2>Предельный RPS для каждого --max-running-requests</h2>
+                <span class="muted small">цели выполняются при RPS не выше указанного</span>
+              </div>
+              <div class="table-wrap"><table class="alts" id="l-table"></table></div>
+            </div>
+            <div class="panel" id="l-compare-panel" hidden>
+              <div class="panel-head"><h2 id="l-compare-title">Сравнение вариантов</h2></div>
+              <div class="table-wrap"><table class="alts" id="l-compare"></table></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h2>Насколько модель совпадает с замерами</h2>
+                <span class="muted small" id="l-fit-hint"></span>
+              </div>
+              <div class="table-wrap"><table class="alts" id="l-valid"></table></div>
+              <p class="muted small" id="l-fit"></p>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h2>Команда запуска</h2><a id="l-source" class="mcard-src" target="_blank" rel="noopener">источник ↗</a></div>
+              <pre id="l-launch"></pre>
+              <div class="memnums" id="l-engine"></div>
+              <ul class="pd-notes" id="l-notes"></ul>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -202,6 +293,20 @@
             «Слоёв с KV» = 0 — все слои. «KV, Б/токен (вручную)» задаётся в bf16 и важнее архитектуры.
           </p>
         </div>
+
+        <details class="panel">
+          <summary><h2>Профили движка SGLang (profiles.json)</h2></summary>
+          <p class="muted small">Конфигурации запуска и замеры. Добавьте свои точки в <code>measurements</code> (из bench_serving или Prometheus) — модель скорости подгонится автоматически. Ёмкость из лога SGLang (<code>max_total_num_tokens</code>) — в <code>capacity.kv_pool_tokens</code>.</p>
+          <textarea id="rawProfiles" spellcheck="false"></textarea>
+          <div class="actions"><span class="status" id="profStatus"></span><button class="btn" data-save-doc="profiles">Сохранить профили</button></div>
+        </details>
+
+        <details class="panel">
+          <summary><h2>Профили нагрузки (workloads.json)</h2></summary>
+          <p class="muted small">Заглушки: замените длины входа/выхода и долю prefix cache своими данными. Распределение — <code>lognormal</code> (p50 + p99), <code>fixed</code> (value) или <code>buckets</code> ([токенов, доля]).</p>
+          <textarea id="rawWorkloads" spellcheck="false"></textarea>
+          <div class="actions"><span class="status" id="wlStatus"></span><button class="btn" data-save-doc="workloads">Сохранить нагрузки</button></div>
+        </details>
 
         <details class="panel">
           <summary><h2>JSON целиком</h2></summary>

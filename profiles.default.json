@@ -1,0 +1,6448 @@
+{
+  "_comment": "Профили движка SGLang: конфигурация запуска + замеры. Источник — SGLang cookbook и указанные issue. Замените или дополните своими замерами (bench_serving или метрики Prometheus): калькулятор сам подгонит модель скорости под точки из measurements.",
+  "profiles": [
+    {
+      "id": "deepseek-v4-flash-b200-fp4-balanced",
+      "name": "DeepSeek-V4 · flash · 4×B200 · fp4 · баланс",
+      "model": "deepseek-v4-flash",
+      "gpu": "b200-180g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend deepep",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--deepep-config '{\\\"normal_dispatch\\\":{\\\"num_sms\\\":96},\\\"normal_combine\\\":{\\\"num_sms\\\":96}}'"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 642,
+          "tpot_ms": 23.2,
+          "tok_s_per_gpu": 5222
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 3147,
+          "tpot_ms": 64.0,
+          "tok_s_per_gpu": 8399
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-b200-fp4-balanced-flash-official",
+      "name": "DeepSeek-V4 · flash-official · 8×B200 · fp4 · баланс",
+      "model": "deepseek-v4-flash",
+      "gpu": "b200-180g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.16",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-a2a-backend deepep",
+          "--deepep-config '{\\\"normal_dispatch\\\":{\\\"num_sms\\\":96},\\\"normal_combine\\\":{\\\"num_sms\\\":96}}'"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 1629.45,
+          "tpot_ms": 34.13,
+          "tok_s_per_gpu": 1595
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 2568.55,
+          "tpot_ms": 57.15,
+          "tok_s_per_gpu": 4326
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-b200-fp4-high-throughput",
+      "name": "DeepSeek-V4 · flash · 4×B200 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-flash",
+      "gpu": "b200-180g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend megamoe"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 104109,
+          "tpot_ms": 70.25,
+          "tok_s_per_gpu": 8345
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 273808,
+          "tpot_ms": 71.34,
+          "tok_s_per_gpu": 8156
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-b200-fp4-high-throughput-flash-official",
+      "name": "DeepSeek-V4 · flash-official · 8×B200 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-flash",
+      "gpu": "b200-180g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.16",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-a2a-backend megamoe"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 74853.51,
+          "tpot_ms": 51.72,
+          "tok_s_per_gpu": 5464
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 216241.01,
+          "tpot_ms": 51.8,
+          "tok_s_per_gpu": 5301
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-b200-fp4-low-latency",
+      "name": "DeepSeek-V4 · flash · 4×B200 · fp4 · низкая задержка",
+      "model": "deepseek-v4-flash",
+      "gpu": "b200-180g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 302,
+          "tpot_ms": 2.91,
+          "tok_s_per_gpu": 677
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 454,
+          "tpot_ms": 8.76,
+          "tok_s_per_gpu": 3059
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-b200-fp4-low-latency-flash-official",
+      "name": "DeepSeek-V4 · flash-official · 8×B200 · fp4 · низкая задержка",
+      "model": "deepseek-v4-flash",
+      "gpu": "b200-180g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.16",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "DSPARK",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--speculative-algorithm DSPARK",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1",
+          "--mem-fraction-static 0.90"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 218.9,
+          "tpot_ms": 1.28,
+          "tok_s_per_gpu": 481
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 189.89,
+          "tpot_ms": 3.38,
+          "tok_s_per_gpu": 3383
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-b200-nvfp4-low-latency",
+      "name": "DeepSeek-V4 · flash · 4×B200 · nvfp4 · низкая задержка",
+      "model": "deepseek-v4-flash",
+      "gpu": "b200-180g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_trtllm_routed",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 308,
+          "tpot_ms": 2.88,
+          "tok_s_per_gpu": 682
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 466,
+          "tpot_ms": 8.67,
+          "tok_s_per_gpu": 3059
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-b300-fp4-balanced",
+      "name": "DeepSeek-V4 · flash · 4×B300 · fp4 · баланс",
+      "model": "deepseek-v4-flash",
+      "gpu": "b300-288g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend deepep",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--deepep-config '{\\\"normal_dispatch\\\":{\\\"num_sms\\\":96},\\\"normal_combine\\\":{\\\"num_sms\\\":96}}'"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 1317,
+          "tpot_ms": 33.78,
+          "tok_s_per_gpu": 3801
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 2722,
+          "tpot_ms": 52.84,
+          "tok_s_per_gpu": 9773
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-b300-fp4-high-throughput",
+      "name": "DeepSeek-V4 · flash · 4×B300 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-flash",
+      "gpu": "b300-288g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend megamoe"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 89936,
+          "tpot_ms": 61.42,
+          "tok_s_per_gpu": 9336
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 238636,
+          "tpot_ms": 61.15,
+          "tok_s_per_gpu": 9432
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-b300-fp4-low-latency",
+      "name": "DeepSeek-V4 · flash · 4×B300 · fp4 · низкая задержка",
+      "model": "deepseek-v4-flash",
+      "gpu": "b300-288g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 191,
+          "tpot_ms": 2.87,
+          "tok_s_per_gpu": 720
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 360,
+          "tpot_ms": 8.05,
+          "tok_s_per_gpu": 3376
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-b300-nvfp4-low-latency",
+      "name": "DeepSeek-V4 · flash · 4×B300 · nvfp4 · низкая задержка",
+      "model": "deepseek-v4-flash",
+      "gpu": "b300-288g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_trtllm_routed",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 187,
+          "tpot_ms": 2.83,
+          "tok_s_per_gpu": 729
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 410,
+          "tpot_ms": 7.68,
+          "tok_s_per_gpu": 3407
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-gb300-fp4-balanced",
+      "name": "DeepSeek-V4 · flash · 4×GB300 · fp4 · баланс",
+      "model": "deepseek-v4-flash",
+      "gpu": "gb300-288g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend deepep",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--deepep-config '{\\\"normal_dispatch\\\":{\\\"num_sms\\\":96},\\\"normal_combine\\\":{\\\"num_sms\\\":96}}'"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 1041,
+          "tpot_ms": 30.45,
+          "tok_s_per_gpu": 4022
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 4291,
+          "tpot_ms": 85.9,
+          "tok_s_per_gpu": 6366
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-gb300-fp4-balanced-flash-official",
+      "name": "DeepSeek-V4 · flash-official · 4×GB300 · fp4 · баланс",
+      "model": "deepseek-v4-flash",
+      "gpu": "gb300-288g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.16",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend deepep",
+          "--deepep-config '{\\\"normal_dispatch\\\":{\\\"num_sms\\\":96},\\\"normal_combine\\\":{\\\"num_sms\\\":96}}'"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 1292.88,
+          "tpot_ms": 46.03,
+          "tok_s_per_gpu": 2678
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 5861.87,
+          "tpot_ms": 103.54,
+          "tok_s_per_gpu": 5030
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-gb300-fp4-high-throughput",
+      "name": "DeepSeek-V4 · flash · 4×GB300 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-flash",
+      "gpu": "gb300-288g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend megamoe"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 137866,
+          "tpot_ms": 93.14,
+          "tok_s_per_gpu": 6338
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 364274,
+          "tpot_ms": 93.27,
+          "tok_s_per_gpu": 6246
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-gb300-fp4-high-throughput-flash-official",
+      "name": "DeepSeek-V4 · flash-official · 4×GB300 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-flash",
+      "gpu": "gb300-288g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.16",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend megamoe"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 156841.34,
+          "tpot_ms": 106.18,
+          "tok_s_per_gpu": 5520
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 410259.84,
+          "tpot_ms": 105.33,
+          "tok_s_per_gpu": 5461
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-gb300-fp4-low-latency",
+      "name": "DeepSeek-V4 · flash · 4×GB300 · fp4 · низкая задержка",
+      "model": "deepseek-v4-flash",
+      "gpu": "gb300-288g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--swa-full-tokens-ratio 0.1"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 434,
+          "tpot_ms": 3.72,
+          "tok_s_per_gpu": 513
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 735,
+          "tpot_ms": 9.95,
+          "tok_s_per_gpu": 2465
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-gb300-fp4-low-latency-flash-official",
+      "name": "DeepSeek-V4 · flash-official · 4×GB300 · fp4 · низкая задержка",
+      "model": "deepseek-v4-flash",
+      "gpu": "gb300-288g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.16",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "DSPARK",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--speculative-algorithm DSPARK",
+          "--mem-fraction-static 0.90",
+          "--swa-full-tokens-ratio 0.1"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 468.93,
+          "tpot_ms": 1.31,
+          "tok_s_per_gpu": 930
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 726.81,
+          "tpot_ms": 8.84,
+          "tok_s_per_gpu": 2711
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-gb300-nvfp4-low-latency",
+      "name": "DeepSeek-V4 · flash · 4×GB300 · nvfp4 · низкая задержка",
+      "model": "deepseek-v4-flash",
+      "gpu": "gb300-288g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_trtllm_routed",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 430,
+          "tpot_ms": 3.51,
+          "tok_s_per_gpu": 537
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 734,
+          "tpot_ms": 10.59,
+          "tok_s_per_gpu": 2385
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-h100-fp4-balanced",
+      "name": "DeepSeek-V4 · flash · 8×H100 · fp4 · баланс",
+      "model": "deepseek-v4-flash",
+      "gpu": "h100-80g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--moe-runner-backend marlin",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 726,
+          "tpot_ms": 23.11,
+          "tok_s_per_gpu": 2306
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 35793,
+          "tpot_ms": 48.46,
+          "tok_s_per_gpu": 2416
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-h100-fp4-high-throughput",
+      "name": "DeepSeek-V4 · flash · 8×H100 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-flash",
+      "gpu": "h100-80g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--moe-runner-backend marlin"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 209393,
+          "tpot_ms": 65.31,
+          "tok_s_per_gpu": 2252
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 476764,
+          "tpot_ms": 66.0,
+          "tok_s_per_gpu": 2248
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-h100-fp4-low-latency",
+      "name": "DeepSeek-V4 · flash · 8×H100 · fp4 · низкая задержка",
+      "model": "deepseek-v4-flash",
+      "gpu": "h100-80g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--moe-runner-backend marlin",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 205,
+          "tpot_ms": 3.19,
+          "tok_s_per_gpu": 319
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 469,
+          "tpot_ms": 8.48,
+          "tok_s_per_gpu": 1539
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-h200-fp4-balanced",
+      "name": "DeepSeek-V4 · flash · 4×H200 · fp4 · баланс",
+      "model": "deepseek-v4-flash",
+      "gpu": "h200-141g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 864,
+          "tpot_ms": 34.12,
+          "tok_s_per_gpu": 3072
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 3222,
+          "tpot_ms": 116.3,
+          "tok_s_per_gpu": 3768
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-h200-fp4-balanced-flash-official",
+      "name": "DeepSeek-V4 · flash-official · 4×H200 · fp4 · баланс",
+      "model": "deepseek-v4-flash",
+      "gpu": "h200-141g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.16",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.88,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "DSPARK",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--speculative-algorithm DSPARK",
+          "--mem-fraction-static 0.88"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 1617.91,
+          "tpot_ms": 38.05,
+          "tok_s_per_gpu": 2994
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 1931.94,
+          "tpot_ms": 104.53,
+          "tok_s_per_gpu": 4872
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-h200-fp4-high-throughput",
+      "name": "DeepSeek-V4 · flash · 4×H200 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-flash",
+      "gpu": "h200-141g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend marlin"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 193812,
+          "tpot_ms": 126.31,
+          "tok_s_per_gpu": 4503
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 499528,
+          "tpot_ms": 125.07,
+          "tok_s_per_gpu": 4546
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-h200-fp4-high-throughput-flash-official",
+      "name": "DeepSeek-V4 · flash-official · 4×H200 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-flash",
+      "gpu": "h200-141g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.16",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend marlin"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 195108.42,
+          "tpot_ms": 123.81,
+          "tok_s_per_gpu": 4573
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 505508.73,
+          "tpot_ms": 123.97,
+          "tok_s_per_gpu": 4542
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-h200-fp4-low-latency",
+      "name": "DeepSeek-V4 · flash · 4×H200 · fp4 · низкая задержка",
+      "model": "deepseek-v4-flash",
+      "gpu": "h200-141g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--flashinfer-mxfp4-moe-precision fp8",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 242,
+          "tpot_ms": 3.37,
+          "tok_s_per_gpu": 603
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 498,
+          "tpot_ms": 10.19,
+          "tok_s_per_gpu": 2636
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-h200-fp4-low-latency-flash-official",
+      "name": "DeepSeek-V4 · flash-official · 4×H200 · fp4 · низкая задержка",
+      "model": "deepseek-v4-flash",
+      "gpu": "h200-141g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.16",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "DSPARK",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--flashinfer-mxfp4-moe-precision fp8",
+          "--speculative-algorithm DSPARK"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 308.29,
+          "tpot_ms": 1.72,
+          "tok_s_per_gpu": 606
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 661.7,
+          "tpot_ms": 8.39,
+          "tok_s_per_gpu": 2538
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-h200-fp8-balanced",
+      "name": "DeepSeek-V4 · flash · 4×H200 · fp8 · баланс",
+      "model": "deepseek-v4-flash",
+      "gpu": "h200-141g",
+      "quant": "fp8",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": 128,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": 128,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend deepep",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--cuda-graph-max-bs-decode 128",
+          "--max-running-requests 128",
+          "--deepep-config '{\\\"normal_dispatch\\\":{\\\"num_sms\\\":96},\\\"normal_combine\\\":{\\\"num_sms\\\":96}}'"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 880,
+          "tpot_ms": 40.63,
+          "tok_s_per_gpu": 3156
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 46563,
+          "tpot_ms": 89.82,
+          "tok_s_per_gpu": 3226
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-h200-fp8-high-throughput",
+      "name": "DeepSeek-V4 · flash · 4×H200 · fp8 · макс. пропускная способность",
+      "model": "deepseek-v4-flash",
+      "gpu": "h200-141g",
+      "quant": "fp8",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": 256,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": 128,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend deepep",
+          "--cuda-graph-max-bs-decode 128",
+          "--max-running-requests 256",
+          "--deepep-config '{\\\"normal_dispatch\\\":{\\\"num_sms\\\":96},\\\"normal_combine\\\":{\\\"num_sms\\\":96}}'"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 217694,
+          "tpot_ms": 146.95,
+          "tok_s_per_gpu": 3975
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 576540,
+          "tpot_ms": 148.29,
+          "tok_s_per_gpu": 3920
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-flash-h200-fp8-low-latency",
+      "name": "DeepSeek-V4 · flash · 4×H200 · fp8 · низкая задержка",
+      "model": "deepseek-v4-flash",
+      "gpu": "h200-141g",
+      "quant": "fp8",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 183,
+          "tpot_ms": 3.26,
+          "tok_s_per_gpu": 632
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 655,
+          "tpot_ms": 10.11,
+          "tok_s_per_gpu": 2752
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-b200-fp4-balanced",
+      "name": "DeepSeek-V4 · pro · 8×B200 · fp4 · баланс",
+      "model": "deepseek-v4-pro",
+      "gpu": "b200-180g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.92,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": 256,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-a2a-backend megamoe",
+          "--chunked-prefill-size 32768",
+          "--swa-full-tokens-ratio 0.1",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--mem-fraction-static 0.92",
+          "--cuda-graph-max-bs-decode 256"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 1081,
+          "tpot_ms": 36.23,
+          "tok_s_per_gpu": 1696
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 4330,
+          "tpot_ms": 97.59,
+          "tok_s_per_gpu": 2721
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-b200-fp4-high-throughput",
+      "name": "DeepSeek-V4 · pro · 8×B200 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-pro",
+      "gpu": "b200-180g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.835,
+        "chunked_prefill_size": 65536,
+        "cuda_graph_max_bs": 544,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-a2a-backend megamoe",
+          "--mem-fraction-static 0.835",
+          "--cuda-graph-max-bs-decode 544",
+          "--swa-full-tokens-ratio 0.075",
+          "--chunked-prefill-size 65536",
+          "--tokenizer-worker-num 8",
+          "--enable-prefill-delayer"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 107158,
+          "tpot_ms": 44.45,
+          "tok_s_per_gpu": 4169
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 265159,
+          "tpot_ms": 44.12,
+          "tok_s_per_gpu": 4252
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-b200-fp4-low-latency",
+      "name": "DeepSeek-V4 · pro · 8×B200 · fp4 · низкая задержка",
+      "model": "deepseek-v4-pro",
+      "gpu": "b200-180g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--chunked-prefill-size 8192",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1",
+          "--mem-fraction-static 0.90"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 230,
+          "tpot_ms": 4.25,
+          "tok_s_per_gpu": 243
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 446,
+          "tpot_ms": 11.56,
+          "tok_s_per_gpu": 1165
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-b200-nvfp4-low-latency",
+      "name": "DeepSeek-V4 · pro · 8×B200 · nvfp4 · низкая задержка",
+      "model": "deepseek-v4-pro",
+      "gpu": "b200-180g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--moe-runner-backend flashinfer_trtllm_routed",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--chunked-prefill-size 8192",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 223,
+          "tpot_ms": 4.19,
+          "tok_s_per_gpu": 245
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 509,
+          "tpot_ms": 11.13,
+          "tok_s_per_gpu": 1210
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-b300-fp4-balanced",
+      "name": "DeepSeek-V4 · pro · 8×B300 · fp4 · баланс",
+      "model": "deepseek-v4-pro",
+      "gpu": "b300-288g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.92,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": 256,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--disable-flashinfer-autotune",
+          "--chunked-prefill-size 32768",
+          "--swa-full-tokens-ratio 0.1",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--mem-fraction-static 0.92",
+          "--cuda-graph-max-bs-decode 256",
+          "--deepep-config '{\\\"normal_dispatch\\\":{\\\"num_sms\\\":96},\\\"normal_combine\\\":{\\\"num_sms\\\":96}}'"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 1868,
+          "tpot_ms": 42.19,
+          "tok_s_per_gpu": 1336
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 2917,
+          "tpot_ms": 99.32,
+          "tok_s_per_gpu": 2669
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-b300-fp4-high-throughput",
+      "name": "DeepSeek-V4 · pro · 8×B300 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-pro",
+      "gpu": "b300-288g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.835,
+        "chunked_prefill_size": 65536,
+        "cuda_graph_max_bs": 544,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-a2a-backend megamoe",
+          "--mem-fraction-static 0.835",
+          "--cuda-graph-max-bs-decode 544",
+          "--swa-full-tokens-ratio 0.075",
+          "--chunked-prefill-size 65536",
+          "--tokenizer-worker-num 8",
+          "--enable-prefill-delayer"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 103678,
+          "tpot_ms": 43.99,
+          "tok_s_per_gpu": 4203
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 257656,
+          "tpot_ms": 42.13,
+          "tok_s_per_gpu": 4400
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-b300-fp4-low-latency",
+      "name": "DeepSeek-V4 · pro · 8×B300 · fp4 · низкая задержка",
+      "model": "deepseek-v4-pro",
+      "gpu": "b300-288g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--chunked-prefill-size 8192",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1",
+          "--mem-fraction-static 0.90"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 258,
+          "tpot_ms": 4.2,
+          "tok_s_per_gpu": 243
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 460,
+          "tpot_ms": 10.97,
+          "tok_s_per_gpu": 1149
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-b300-nvfp4-low-latency",
+      "name": "DeepSeek-V4 · pro · 8×B300 · nvfp4 · низкая задержка",
+      "model": "deepseek-v4-pro",
+      "gpu": "b300-288g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--moe-runner-backend flashinfer_trtllm_routed",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--chunked-prefill-size 8192",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1",
+          "--mem-fraction-static 0.90"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 206,
+          "tpot_ms": 4.14,
+          "tok_s_per_gpu": 251
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 425,
+          "tpot_ms": 10.51,
+          "tok_s_per_gpu": 1256
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-gb300-fp4-balanced",
+      "name": "DeepSeek-V4 · pro · 4×GB300 · fp4 · баланс",
+      "model": "deepseek-v4-pro",
+      "gpu": "gb300-288g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": 128,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend deepep",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--mem-fraction-static 0.9",
+          "--cuda-graph-max-bs-decode 128",
+          "--max-running-requests 256",
+          "--deepep-config '{\\\"normal_dispatch\\\":{\\\"num_sms\\\":96},\\\"normal_combine\\\":{\\\"num_sms\\\":96}}'"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 1088,
+          "tpot_ms": 50.17,
+          "tok_s_per_gpu": 2455
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 8122,
+          "tpot_ms": 156.18,
+          "tok_s_per_gpu": 3429
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-gb300-fp4-balanced-pro-official",
+      "name": "DeepSeek-V4 · pro-official · 4×GB300 · fp4 · баланс",
+      "model": "deepseek-v4-pro",
+      "gpu": "gb300-288g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 273d978bed",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend deepep",
+          "--deepep-config '{\\\"normal_dispatch\\\":{\\\"num_sms\\\":96},\\\"normal_combine\\\":{\\\"num_sms\\\":96}}'"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 6641.9,
+          "tpot_ms": 37.42,
+          "tok_s_per_gpu": 3281
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 19710.64,
+          "tpot_ms": 76.8,
+          "tok_s_per_gpu": 5996
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-gb300-fp4-high-throughput",
+      "name": "DeepSeek-V4 · pro · 4×GB300 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-pro",
+      "gpu": "gb300-288g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": 128,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend megamoe",
+          "--mem-fraction-static 0.9",
+          "--cuda-graph-max-bs-decode 128",
+          "--max-running-requests 256"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 288182,
+          "tpot_ms": 185.19,
+          "tok_s_per_gpu": 2832
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 761128,
+          "tpot_ms": 188.23,
+          "tok_s_per_gpu": 2787
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-gb300-fp4-high-throughput-pro-official",
+      "name": "DeepSeek-V4 · pro-official · 4×GB300 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-pro",
+      "gpu": "gb300-288g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 273d978bed",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": 512,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": 128,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend megamoe",
+          "--mem-fraction-static 0.9",
+          "--cuda-graph-max-bs-decode 128",
+          "--max-running-requests 512"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 10149.99,
+          "tpot_ms": 75.29,
+          "tok_s_per_gpu": 6758
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 512,
+          "ttft_ms": 34087.61,
+          "tpot_ms": 120.69,
+          "tok_s_per_gpu": 7475
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-gb300-fp4-low-latency",
+      "name": "DeepSeek-V4 · pro · 4×GB300 · fp4 · низкая задержка",
+      "model": "deepseek-v4-pro",
+      "gpu": "gb300-288g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--chunked-prefill-size 8192",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1",
+          "--mem-fraction-static 0.90"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 317,
+          "tpot_ms": 4.49,
+          "tok_s_per_gpu": 441
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 501,
+          "tpot_ms": 14.54,
+          "tok_s_per_gpu": 1934
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-gb300-fp4-low-latency-pro-official",
+      "name": "DeepSeek-V4 · pro-official · 4×GB300 · fp4 · низкая задержка",
+      "model": "deepseek-v4-pro",
+      "gpu": "gb300-288g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 273d978bed",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "DSPARK",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--speculative-algorithm DSPARK",
+          "--chunked-prefill-size 8192",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1",
+          "--mem-fraction-static 0.90"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 345.49,
+          "tpot_ms": 3.32,
+          "tok_s_per_gpu": 615
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 2854.89,
+          "tpot_ms": 9.35,
+          "tok_s_per_gpu": 2965
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-gb300-nvfp4-low-latency",
+      "name": "DeepSeek-V4 · pro · 4×GB300 · nvfp4 · низкая задержка",
+      "model": "deepseek-v4-pro",
+      "gpu": "gb300-288g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--moe-runner-backend flashinfer_trtllm_routed",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--chunked-prefill-size 8192",
+          "--disable-flashinfer-autotune",
+          "--swa-full-tokens-ratio 0.1",
+          "--mem-fraction-static 0.90"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 321,
+          "tpot_ms": 4.61,
+          "tok_s_per_gpu": 440
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 631,
+          "tpot_ms": 14.25,
+          "tok_s_per_gpu": 1921
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-h200-fp4-balanced",
+      "name": "DeepSeek-V4 · pro · 8×H200 · fp4 · баланс",
+      "model": "deepseek-v4-pro",
+      "gpu": "h200-141g",
+      "quant": "fp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.88,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--mem-fraction-static 0.88"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 41506,
+          "tpot_ms": 26.14,
+          "tok_s_per_gpu": 589
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 209586,
+          "tpot_ms": 28.23,
+          "tok_s_per_gpu": 591
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-h200-fp4-high-throughput",
+      "name": "DeepSeek-V4 · pro · 8×H200 · fp4 · макс. пропускная способность",
+      "model": "deepseek-v4-pro",
+      "gpu": "h200-141g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.88,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--mem-fraction-static 0.88"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 889185,
+          "tpot_ms": 66.39,
+          "tok_s_per_gpu": 594
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 4096,
+          "ttft_ms": 1833386,
+          "tpot_ms": 65.86,
+          "tok_s_per_gpu": 601
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4-pro-h200-fp4-low-latency",
+      "name": "DeepSeek-V4 · pro · 8×H200 · fp4 · низкая задержка",
+      "model": "deepseek-v4-pro",
+      "gpu": "h200-141g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.15.post1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--moe-runner-backend flashinfer_mxfp4",
+          "--flashinfer-mxfp4-moe-precision fp8",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 3",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 4",
+          "--mem-fraction-static 0.90"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 634,
+          "tpot_ms": 5.65,
+          "tok_s_per_gpu": 170
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 1727,
+          "tpot_ms": 23.12,
+          "tok_s_per_gpu": 559
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/DeepSeek/DeepSeek-V4",
+      "note": ""
+    },
+    {
+      "id": "deepseek-v4.1-flash-b300-fp4-high-throughput",
+      "name": "DeepSeek-V4.1-Flash · 4×B300 TP4/EP4 · fp4 · макс. пропускная способность · Engram на GPU",
+      "model": "deepseek-v4.1-flash",
+      "gpu": "b300-288g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "da64c5cb (dev-dsv41)",
+        "image": "lmsysorg/sglang:dev-dsv41",
+        "tp": 4,
+        "ep": 4,
+        "gpus": 4,
+        "nnodes": 1,
+        "max_running_requests": 256,
+        "flags": [
+          "--tp 4",
+          "--ep-size 4",
+          "--max-running-requests 256"
+        ]
+      },
+      "capacity": {
+        "weights_gib_per_gpu": 100.2,
+        "kv_tokens_per_gib": 300300
+      },
+      "perf_scale": {
+        "decode": 1.0,
+        "prefill": 1.0
+      },
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 1,
+          "ttft_ms": 190.98,
+          "tpot_ms": 4.44,
+          "tok_s_per_gpu": 241.69
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 16,
+          "ttft_ms": 604.14,
+          "tpot_ms": 7.6,
+          "tok_s_per_gpu": 2007.51
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 64,
+          "ttft_ms": 1557.56,
+          "tpot_ms": 13.43,
+          "tok_s_per_gpu": 4094.59
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 253.88,
+          "tpot_ms": 4.46,
+          "tok_s_per_gpu": 478.7
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 2346.31,
+          "tpot_ms": 8.54,
+          "tok_s_per_gpu": 3322.26
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 7635.88,
+          "tpot_ms": 17.6,
+          "tok_s_per_gpu": 5744.12
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://github.com/sgl-project/sglang/issues/41946",
+      "note": "Замеры из issue #41946 (B300, TP4/EP4, медианы трёх прогонов). Ёмкость: веса 74,5 ГиБ + 2,1 ГиБ DSpark на GPU при Engram в RAM (+23,6 ГиБ при Engram на GPU), плотность KV-пула ~300 тыс. токенов на ГиБ — по 24-часовому замеру на 4×B200 (github.com/caiovicentino/deepseek-v4.1-flash-sglang-4x-b200)."
+    },
+    {
+      "id": "deepseek-v4.1-flash-b300-fp4-high-throughput-engram-host",
+      "name": "DeepSeek-V4.1-Flash · 4×B300 TP4/EP4 · fp4 · макс. пропускная способность · Engram в RAM хоста",
+      "model": "deepseek-v4.1-flash",
+      "gpu": "b300-288g",
+      "quant": "fp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "da64c5cb (dev-dsv41)",
+        "image": "lmsysorg/sglang:dev-dsv41",
+        "tp": 4,
+        "ep": 4,
+        "gpus": 4,
+        "nnodes": 1,
+        "max_running_requests": 256,
+        "flags": [
+          "--tp 4",
+          "--ep-size 4",
+          "--max-running-requests 256"
+        ],
+        "env": [
+          "SGLANG_ENABLE_DSV41_ENGRAM_HOST_TABLE=1",
+          "SGLANG_DSV41_ENGRAM_HOST_TABLE_LAYOUT=per_rank"
+        ]
+      },
+      "capacity": {
+        "weights_gib_per_gpu": 76.6,
+        "kv_tokens_per_gib": 300300
+      },
+      "perf_scale": {
+        "decode": 1.0,
+        "prefill": 1.0
+      },
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 1,
+          "ttft_ms": 190.98,
+          "tpot_ms": 4.44,
+          "tok_s_per_gpu": 241.69
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 16,
+          "ttft_ms": 604.14,
+          "tpot_ms": 7.6,
+          "tok_s_per_gpu": 2007.51
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 64,
+          "ttft_ms": 1557.56,
+          "tpot_ms": 13.43,
+          "tok_s_per_gpu": 4094.59
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 253.88,
+          "tpot_ms": 4.46,
+          "tok_s_per_gpu": 478.7
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 2346.31,
+          "tpot_ms": 8.54,
+          "tok_s_per_gpu": 3322.26
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 7635.88,
+          "tpot_ms": 17.6,
+          "tok_s_per_gpu": 5744.12
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://github.com/sgl-project/sglang/issues/41946",
+      "note": "Замеры из issue сделаны с Engram на GPU (по умолчанию). Для варианта с Engram в RAM хоста скорость не измерена — perf_scale = 1,0 (заглушка); cookbook: вывод побитово тот же, освобождённая HBM уходит в KV-пул. Ёмкость: веса 74,5 ГиБ + 2,1 ГиБ DSpark на GPU при Engram в RAM (+23,6 ГиБ при Engram на GPU), плотность KV-пула ~300 тыс. токенов на ГиБ — по 24-часовому замеру на 4×B200 (github.com/caiovicentino/deepseek-v4.1-flash-sglang-4x-b200)."
+    },
+    {
+      "id": "deepseek-v4.1-flash-b300-fp4-low-latency",
+      "name": "DeepSeek-V4.1-Flash · 4×B300 TP4/EP4 · fp4 · низкая задержка · Engram на GPU",
+      "model": "deepseek-v4.1-flash",
+      "gpu": "b300-288g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "da64c5cb (dev-dsv41)",
+        "image": "lmsysorg/sglang:dev-dsv41",
+        "tp": 4,
+        "ep": 4,
+        "gpus": 4,
+        "nnodes": 1,
+        "mem_fraction_static": 0.8,
+        "cuda_graph_max_bs": 64,
+        "speculative": "DSPARK",
+        "flags": [
+          "--tp 4",
+          "--ep-size 4",
+          "--mem-fraction-static 0.8",
+          "--speculative-algorithm DSPARK",
+          "--speculative-dspark-block-size 5",
+          "--cuda-graph-max-bs-decode 64"
+        ]
+      },
+      "capacity": {
+        "weights_gib_per_gpu": 100.2,
+        "kv_tokens_per_gib": 300300
+      },
+      "perf_scale": {
+        "decode": 1.0,
+        "prefill": 1.0
+      },
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 1,
+          "ttft_ms": 195.67,
+          "tpot_ms": 1.37,
+          "tok_s_per_gpu": 587.72
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 16,
+          "ttft_ms": 410.55,
+          "tpot_ms": 9.95,
+          "tok_s_per_gpu": 1681.01
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 32,
+          "ttft_ms": 558.63,
+          "tpot_ms": 15.8,
+          "tok_s_per_gpu": 2150.76
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 258.13,
+          "tpot_ms": 1.23,
+          "tok_s_per_gpu": 1510.03
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 889.22,
+          "tpot_ms": 5.51,
+          "tok_s_per_gpu": 5498.79
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 32,
+          "ttft_ms": 1384.33,
+          "tpot_ms": 9.38,
+          "tok_s_per_gpu": 6585.65
+        },
+        {
+          "isl": 32768,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 939.02,
+          "tpot_ms": 1.26,
+          "tok_s_per_gpu": 3787.9
+        },
+        {
+          "isl": 32768,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 3059.92,
+          "tpot_ms": 13.53,
+          "tok_s_per_gpu": 7898.76
+        },
+        {
+          "isl": 65536,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 1917.45,
+          "tpot_ms": 1.27,
+          "tok_s_per_gpu": 5167.33
+        },
+        {
+          "isl": 65536,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 6485.94,
+          "tpot_ms": 24.83,
+          "tok_s_per_gpu": 8295.27
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://github.com/sgl-project/sglang/issues/41946",
+      "note": "Замеры из issue #41946 (B300, TP4/EP4, медианы трёх прогонов). Ёмкость: веса 74,5 ГиБ + 2,1 ГиБ DSpark на GPU при Engram в RAM (+23,6 ГиБ при Engram на GPU), плотность KV-пула ~300 тыс. токенов на ГиБ — по 24-часовому замеру на 4×B200 (github.com/caiovicentino/deepseek-v4.1-flash-sglang-4x-b200)."
+    },
+    {
+      "id": "deepseek-v4.1-flash-b300-fp4-low-latency-engram-host",
+      "name": "DeepSeek-V4.1-Flash · 4×B300 TP4/EP4 · fp4 · низкая задержка · Engram в RAM хоста",
+      "model": "deepseek-v4.1-flash",
+      "gpu": "b300-288g",
+      "quant": "fp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "da64c5cb (dev-dsv41)",
+        "image": "lmsysorg/sglang:dev-dsv41",
+        "tp": 4,
+        "ep": 4,
+        "gpus": 4,
+        "nnodes": 1,
+        "mem_fraction_static": 0.8,
+        "cuda_graph_max_bs": 64,
+        "speculative": "DSPARK",
+        "flags": [
+          "--tp 4",
+          "--ep-size 4",
+          "--mem-fraction-static 0.8",
+          "--speculative-algorithm DSPARK",
+          "--speculative-dspark-block-size 5",
+          "--cuda-graph-max-bs-decode 64"
+        ],
+        "env": [
+          "SGLANG_ENABLE_DSV41_ENGRAM_HOST_TABLE=1",
+          "SGLANG_DSV41_ENGRAM_HOST_TABLE_LAYOUT=per_rank"
+        ]
+      },
+      "capacity": {
+        "weights_gib_per_gpu": 76.6,
+        "kv_tokens_per_gib": 300300
+      },
+      "perf_scale": {
+        "decode": 1.0,
+        "prefill": 1.0
+      },
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 1,
+          "ttft_ms": 195.67,
+          "tpot_ms": 1.37,
+          "tok_s_per_gpu": 587.72
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 16,
+          "ttft_ms": 410.55,
+          "tpot_ms": 9.95,
+          "tok_s_per_gpu": 1681.01
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 32,
+          "ttft_ms": 558.63,
+          "tpot_ms": 15.8,
+          "tok_s_per_gpu": 2150.76
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 258.13,
+          "tpot_ms": 1.23,
+          "tok_s_per_gpu": 1510.03
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 889.22,
+          "tpot_ms": 5.51,
+          "tok_s_per_gpu": 5498.79
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 32,
+          "ttft_ms": 1384.33,
+          "tpot_ms": 9.38,
+          "tok_s_per_gpu": 6585.65
+        },
+        {
+          "isl": 32768,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 939.02,
+          "tpot_ms": 1.26,
+          "tok_s_per_gpu": 3787.9
+        },
+        {
+          "isl": 32768,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 3059.92,
+          "tpot_ms": 13.53,
+          "tok_s_per_gpu": 7898.76
+        },
+        {
+          "isl": 65536,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 1917.45,
+          "tpot_ms": 1.27,
+          "tok_s_per_gpu": 5167.33
+        },
+        {
+          "isl": 65536,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 6485.94,
+          "tpot_ms": 24.83,
+          "tok_s_per_gpu": 8295.27
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://github.com/sgl-project/sglang/issues/41946",
+      "note": "Замеры из issue сделаны с Engram на GPU (по умолчанию). Для варианта с Engram в RAM хоста скорость не измерена — perf_scale = 1,0 (заглушка); cookbook: вывод побитово тот же, освобождённая HBM уходит в KV-пул. Ёмкость: веса 74,5 ГиБ + 2,1 ГиБ DSpark на GPU при Engram в RAM (+23,6 ГиБ при Engram на GPU), плотность KV-пула ~300 тыс. токенов на ГиБ — по 24-часовому замеру на 4×B200 (github.com/caiovicentino/deepseek-v4.1-flash-sglang-4x-b200)."
+    },
+    {
+      "id": "gigachat3.5-h100-fp8-high-throughput-capacity",
+      "name": "GigaChat 3.5 · 8×H100 · fp8 · ёмкость из cookbook",
+      "model": "gigachat3.5",
+      "gpu": "h100-80g",
+      "quant": "fp8",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "9d58189c12 (main, 2026-09-22)",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": 8,
+        "gpus": 8,
+        "nnodes": 1,
+        "mem_fraction_static": 0.8,
+        "flags": [
+          "--tp 8",
+          "--ep 8",
+          "--mem-fraction-static 0.8"
+        ]
+      },
+      "capacity": {
+        "kv_pool_tokens": 542000,
+        "state_slots": 347
+      },
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 540,
+          "tpot_ms": 14.24,
+          "tok_s_per_gpu": 76
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 4930,
+          "tpot_ms": 27.85,
+          "tok_s_per_gpu": 551
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 18836,
+          "tpot_ms": 48.0,
+          "tok_s_per_gpu": 913
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GigaChat/GigaChat3.5",
+      "note": "Ёмкость из cookbook: ~51 ГБ весов на GPU, 347 слотов state и 542 тыс. KV-токенов при mem-fraction 0,8."
+    },
+    {
+      "id": "gigachat3.5-h100-fp8-low-latency-capacity",
+      "name": "GigaChat 3.5 · 8×H100 · fp8 · низкая задержка (MTP) · ёмкость из cookbook",
+      "model": "gigachat3.5",
+      "gpu": "h100-80g",
+      "quant": "fp8",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "9d58189c12 (main, 2026-09-22)",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": 8,
+        "gpus": 8,
+        "nnodes": 1,
+        "mem_fraction_static": 0.8,
+        "max_running_requests": 80,
+        "speculative": "EAGLE",
+        "flags": [
+          "--tp 8",
+          "--ep 8",
+          "--mem-fraction-static 0.8",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 2",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 3",
+          "--max-running-requests 80",
+          "--max-mamba-cache-size 240"
+        ]
+      },
+      "capacity": {
+        "kv_pool_tokens": 185000,
+        "state_slots": 240
+      },
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 583,
+          "tpot_ms": 6.43,
+          "tok_s_per_gpu": 161
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 1416,
+          "tpot_ms": 17.12,
+          "tok_s_per_gpu": 850
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 52262,
+          "tpot_ms": 22.78,
+          "tok_s_per_gpu": 900
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GigaChat/GigaChat3.5",
+      "note": "С MTP пул state закреплён на 240 слотов, KV-пул падает до 185 тыс. токенов."
+    },
+    {
+      "id": "glm-5.2-b200-fp8-balanced",
+      "name": "GLM-5.2 · 8×B200 · fp8 · баланс",
+      "model": "glm-5.2",
+      "gpu": "b200-180g",
+      "quant": "fp8",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 09ca4fc",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-a2a-backend deepep",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--mem-fraction-static 0.85",
+          "--chunked-prefill-size 32768",
+          "--max-running-requests 256"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 5742,
+          "tpot_ms": 17.65,
+          "tok_s_per_gpu": 3078
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 18744,
+          "tpot_ms": 32.61,
+          "tok_s_per_gpu": 5022
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-b200-fp8-high-throughput",
+      "name": "GLM-5.2 · 8×B200 · fp8 · макс. пропускная способность",
+      "model": "glm-5.2",
+      "gpu": "b200-180g",
+      "quant": "fp8",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 09ca4fc",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-a2a-backend deepep",
+          "--mem-fraction-static 0.85",
+          "--max-running-requests 256"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 177620,
+          "tpot_ms": 47.99,
+          "tok_s_per_gpu": 4059
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-b200-fp8-low-latency",
+      "name": "GLM-5.2 · 8×B200 · fp8 · низкая задержка",
+      "model": "glm-5.2",
+      "gpu": "b200-180g",
+      "quant": "fp8",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 09ca4fc",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.8,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6",
+          "--mem-fraction-static 0.8"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 757,
+          "tpot_ms": 3.22,
+          "tok_s_per_gpu": 288
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 3188,
+          "tpot_ms": 9.12,
+          "tok_s_per_gpu": 1476
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-b200-nvfp4-balanced",
+      "name": "GLM-5.2 · 8×B200 · nvfp4 · баланс",
+      "model": "glm-5.2",
+      "gpu": "b200-180g",
+      "quant": "nvfp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.92,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--quantization modelopt_fp4",
+          "--attn-dp-size 8",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 2",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 3",
+          "--chunked-prefill-size 32768",
+          "--mem-fraction-static 0.92",
+          "--max-running-requests 256"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 5837,
+          "tpot_ms": 12.7,
+          "tok_s_per_gpu": 3770
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 16736,
+          "tpot_ms": 30.0,
+          "tok_s_per_gpu": 5343
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-b200-nvfp4-high-throughput",
+      "name": "GLM-5.2 · 8×B200 · nvfp4 · макс. пропускная способность",
+      "model": "glm-5.2",
+      "gpu": "b200-180g",
+      "quant": "nvfp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": 512,
+        "mem_fraction_static": 0.92,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--quantization modelopt_fp4",
+          "--attn-dp-size 8",
+          "--chunked-prefill-size 32768",
+          "--mem-fraction-static 0.92",
+          "--max-running-requests 512"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 130174,
+          "tpot_ms": 67.12,
+          "tok_s_per_gpu": 5305
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-b200-nvfp4-low-latency",
+      "name": "GLM-5.2 · 8×B200 · nvfp4 · низкая задержка",
+      "model": "glm-5.2",
+      "gpu": "b200-180g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--quantization modelopt_fp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6",
+          "--chunked-prefill-size 8192",
+          "--mem-fraction-static 0.85"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 295,
+          "tpot_ms": 1.85,
+          "tok_s_per_gpu": 527
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 2491,
+          "tpot_ms": 5.43,
+          "tok_s_per_gpu": 2289
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-b300-nvfp4-balanced",
+      "name": "GLM-5.2 · 8×B300 · nvfp4 · баланс",
+      "model": "glm-5.2",
+      "gpu": "b300-288g",
+      "quant": "nvfp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--quantization modelopt_fp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 2",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 3",
+          "--speculative-attention-mode decode",
+          "--max-running-requests 256",
+          "--chunked-prefill-size 8192",
+          "--mem-fraction-static 0.85"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 680,
+          "tpot_ms": 48.9,
+          "tok_s_per_gpu": 1377
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 3010,
+          "tpot_ms": 149,
+          "tok_s_per_gpu": 1845
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-b300-nvfp4-high-throughput",
+      "name": "GLM-5.2 · 8×B300 · nvfp4 · макс. пропускная способность",
+      "model": "glm-5.2",
+      "gpu": "b300-288g",
+      "quant": "nvfp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": 1024,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--quantization modelopt_fp4",
+          "--max-running-requests 1024",
+          "--chunked-prefill-size 8192",
+          "--mem-fraction-static 0.85"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 6370,
+          "tpot_ms": 280,
+          "tok_s_per_gpu": 3870
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-b300-nvfp4-low-latency",
+      "name": "GLM-5.2 · 8×B300 · nvfp4 · низкая задержка",
+      "model": "glm-5.2",
+      "gpu": "b300-288g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": 16,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": 16,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--quantization modelopt_fp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6",
+          "--chunked-prefill-size 8192",
+          "--mem-fraction-static 0.85",
+          "--max-running-requests 16",
+          "--cuda-graph-max-bs-decode 16",
+          "--max-prefill-tokens 8192"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 196,
+          "tpot_ms": 1.86,
+          "tok_s_per_gpu": 459
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 274,
+          "tpot_ms": 6.95,
+          "tok_s_per_gpu": 2016
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-gb300-fp8-balanced",
+      "name": "GLM-5.2 · 4×GB300 · fp8 · баланс",
+      "model": "glm-5.2",
+      "gpu": "gb300-288g",
+      "quant": "fp8",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 09ca4fc",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend deepep",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--mem-fraction-static 0.85",
+          "--chunked-prefill-size 32768",
+          "--max-running-requests 256"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 7429,
+          "tpot_ms": 25.21,
+          "tok_s_per_gpu": 4437
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 27488,
+          "tpot_ms": 48.43,
+          "tok_s_per_gpu": 6804
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-gb300-fp8-high-throughput",
+      "name": "GLM-5.2 · 4×GB300 · fp8 · макс. пропускная способность",
+      "model": "glm-5.2",
+      "gpu": "gb300-288g",
+      "quant": "fp8",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 09ca4fc",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend deepep",
+          "--mem-fraction-static 0.85"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 231101,
+          "tpot_ms": 86.01,
+          "tok_s_per_gpu": 6039
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-gb300-fp8-low-latency",
+      "name": "GLM-5.2 · 4×GB300 · fp8 · низкая задержка",
+      "model": "glm-5.2",
+      "gpu": "gb300-288g",
+      "quant": "fp8",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 09ca4fc",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6",
+          "--mem-fraction-static 0.85"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 374,
+          "tpot_ms": 4.55,
+          "tok_s_per_gpu": 459
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 3719,
+          "tpot_ms": 11.5,
+          "tok_s_per_gpu": 2376
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-h200-fp8-balanced",
+      "name": "GLM-5.2 · 8×H200 · fp8 · баланс",
+      "model": "glm-5.2",
+      "gpu": "h200-141g",
+      "quant": "fp8",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "v0.5.14 @ 49e384ce",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-a2a-backend deepep",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--mem-fraction-static 0.85",
+          "--chunked-prefill-size 32768",
+          "--max-running-requests 256"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 7473,
+          "tpot_ms": 23.49,
+          "tok_s_per_gpu": 2343
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 80562,
+          "tpot_ms": 28.08,
+          "tok_s_per_gpu": 2391
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-h200-fp8-high-throughput",
+      "name": "GLM-5.2 · 8×H200 · fp8 · макс. пропускная способность",
+      "model": "glm-5.2",
+      "gpu": "h200-141g",
+      "quant": "fp8",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "v0.5.14 @ 49e384ce",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-a2a-backend deepep",
+          "--mem-fraction-static 0.85",
+          "--max-running-requests 256"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 553480,
+          "tpot_ms": 61.71,
+          "tok_s_per_gpu": 1656
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.2-h200-fp8-low-latency",
+      "name": "GLM-5.2 · 8×H200 · fp8 · низкая задержка",
+      "model": "glm-5.2",
+      "gpu": "h200-141g",
+      "quant": "fp8",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "v0.5.14 @ 49e384ce",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.8,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6",
+          "--mem-fraction-static 0.8"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 668,
+          "tpot_ms": 5.05,
+          "tok_s_per_gpu": 197
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 6148,
+          "tpot_ms": 16.11,
+          "tok_s_per_gpu": 813
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.2",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-b200-fp8-high-throughput",
+      "name": "GLM-5.3 · 8×B200 · fp8 · макс. пропускная способность",
+      "model": "glm-5.3",
+      "gpu": "b200-180g",
+      "quant": "fp8",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 20a491d1d311",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-a2a-backend deepep",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--mem-fraction-static 0.85",
+          "--chunked-prefill-size 32768",
+          "--max-running-requests 256"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 5908,
+          "tpot_ms": 16.53,
+          "tok_s_per_gpu": 3220
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 18916,
+          "tpot_ms": 31.88,
+          "tok_s_per_gpu": 5025
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-b200-fp8-low-latency",
+      "name": "GLM-5.3 · 8×B200 · fp8 · низкая задержка",
+      "model": "glm-5.3",
+      "gpu": "b200-180g",
+      "quant": "fp8",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 20a491d1d311",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.8,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6",
+          "--mem-fraction-static 0.8"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 400,
+          "tpot_ms": 3.11,
+          "tok_s_per_gpu": 321
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 3044,
+          "tpot_ms": 7.84,
+          "tok_s_per_gpu": 1662
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-b300-bf16-balanced",
+      "name": "GLM-5.3 · 8×B300 · bf16 · баланс",
+      "model": "glm-5.3",
+      "gpu": "b300-288g",
+      "quant": "bf16",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 20a491d1d311",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": 80,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--mem-fraction-static 0.9",
+          "--chunked-prefill-size 32768",
+          "--max-running-requests 80"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 9512,
+          "tpot_ms": 22.3,
+          "tok_s_per_gpu": 2279
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 75250,
+          "tpot_ms": 25.84,
+          "tok_s_per_gpu": 2333
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-b300-bf16-high-throughput",
+      "name": "GLM-5.3 · 8×B300 · bf16 · макс. пропускная способность",
+      "model": "glm-5.3",
+      "gpu": "b300-288g",
+      "quant": "bf16",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 20a491d1d311",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--mem-fraction-static 0.9",
+          "--max-running-requests 256"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1024,
+          "ttft_ms": 349227,
+          "tpot_ms": 65.45,
+          "tok_s_per_gpu": 2216
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-b300-bf16-low-latency",
+      "name": "GLM-5.3 · 8×B300 · bf16 · низкая задержка",
+      "model": "glm-5.3",
+      "gpu": "b300-288g",
+      "quant": "bf16",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 20a491d1d311",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.9,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6",
+          "--mem-fraction-static 0.9"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 344,
+          "tpot_ms": 2.96,
+          "tok_s_per_gpu": 341
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 2772,
+          "tpot_ms": 9.13,
+          "tok_s_per_gpu": 1521
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-b300-fp8-high-throughput",
+      "name": "GLM-5.3 · 8×B300 · fp8 · макс. пропускная способность",
+      "model": "glm-5.3",
+      "gpu": "b300-288g",
+      "quant": "fp8",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 20a491d1d311",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-a2a-backend deepep",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--mem-fraction-static 0.85",
+          "--chunked-prefill-size 32768",
+          "--max-running-requests 256"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 5586,
+          "tpot_ms": 16.37,
+          "tok_s_per_gpu": 3296
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 17848,
+          "tpot_ms": 32.48,
+          "tok_s_per_gpu": 5259
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-b300-fp8-low-latency",
+      "name": "GLM-5.3 · 8×B300 · fp8 · низкая задержка",
+      "model": "glm-5.3",
+      "gpu": "b300-288g",
+      "quant": "fp8",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 20a491d1d311",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.8,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6",
+          "--mem-fraction-static 0.8"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 342,
+          "tpot_ms": 3.1,
+          "tok_s_per_gpu": 328
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 2851,
+          "tpot_ms": 7.77,
+          "tok_s_per_gpu": 1705
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-b300-nvfp4-high-throughput",
+      "name": "GLM-5.3 · 8×B300 · nvfp4 · макс. пропускная способность",
+      "model": "glm-5.3",
+      "gpu": "b300-288g",
+      "quant": "nvfp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 26fd7fdaa273",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.92,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--quantization modelopt_fp4",
+          "--attn-dp-size 8",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 2",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 3",
+          "--chunked-prefill-size 32768",
+          "--mem-fraction-static 0.92",
+          "--max-running-requests 256"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 5227,
+          "tpot_ms": 12.4,
+          "tok_s_per_gpu": 3748
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 17513,
+          "tpot_ms": 29.97,
+          "tok_s_per_gpu": 5416
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-b300-nvfp4-low-latency",
+      "name": "GLM-5.3 · 8×B300 · nvfp4 · низкая задержка",
+      "model": "glm-5.3",
+      "gpu": "b300-288g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 26fd7fdaa273",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": 16,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": 16,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--quantization modelopt_fp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6",
+          "--chunked-prefill-size 8192",
+          "--mem-fraction-static 0.85",
+          "--max-running-requests 16",
+          "--cuda-graph-max-bs-decode 16",
+          "--max-prefill-tokens 8192"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 281,
+          "tpot_ms": 1.48,
+          "tok_s_per_gpu": 640
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 1988,
+          "tpot_ms": 5.11,
+          "tok_s_per_gpu": 2306
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-gb300-fp8-high-throughput",
+      "name": "GLM-5.3 · 4×GB300 · fp8 · макс. пропускная способность",
+      "model": "glm-5.3",
+      "gpu": "gb300-288g",
+      "quant": "fp8",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 20a491d1d311",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--attn-dp-size 4",
+          "--moe-a2a-backend deepep",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--mem-fraction-static 0.85",
+          "--chunked-prefill-size 32768",
+          "--max-running-requests 256"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 7775,
+          "tpot_ms": 22.77,
+          "tok_s_per_gpu": 4743
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 25775,
+          "tpot_ms": 45.87,
+          "tok_s_per_gpu": 7501
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-gb300-fp8-low-latency",
+      "name": "GLM-5.3 · 4×GB300 · fp8 · низкая задержка",
+      "model": "glm-5.3",
+      "gpu": "gb300-288g",
+      "quant": "fp8",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 20a491d1d311",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6",
+          "--mem-fraction-static 0.85"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 372,
+          "tpot_ms": 3.68,
+          "tok_s_per_gpu": 556
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 3305,
+          "tpot_ms": 10.02,
+          "tok_s_per_gpu": 2718
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-gb300-nvfp4-high-throughput",
+      "name": "GLM-5.3 · 4×GB300 · nvfp4 · макс. пропускная способность",
+      "model": "glm-5.3",
+      "gpu": "gb300-288g",
+      "quant": "nvfp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 26fd7fdaa273",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": 4,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.92,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--quantization modelopt_fp4",
+          "--attn-dp-size 4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 2",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 3",
+          "--chunked-prefill-size 8192",
+          "--mem-fraction-static 0.92",
+          "--max-running-requests 256"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 5828,
+          "tpot_ms": 16.69,
+          "tok_s_per_gpu": 6108
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 22330,
+          "tpot_ms": 39.63,
+          "tok_s_per_gpu": 8537
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-gb300-nvfp4-low-latency",
+      "name": "GLM-5.3 · 4×GB300 · nvfp4 · низкая задержка",
+      "model": "glm-5.3",
+      "gpu": "gb300-288g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 26fd7fdaa273",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": 16,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": 16,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4",
+          "--quantization modelopt_fp4",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6",
+          "--chunked-prefill-size 8192",
+          "--mem-fraction-static 0.85",
+          "--max-running-requests 16",
+          "--cuda-graph-max-bs-decode 16",
+          "--max-prefill-tokens 8192"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 307,
+          "tpot_ms": 1.71,
+          "tok_s_per_gpu": 1113
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 2132,
+          "tpot_ms": 6.18,
+          "tok_s_per_gpu": 3979
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-h200-fp8-high-throughput",
+      "name": "GLM-5.3 · 8×H200 · fp8 · макс. пропускная способность",
+      "model": "glm-5.3",
+      "gpu": "h200-141g",
+      "quant": "fp8",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 20a491d1d311",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": 8,
+        "max_running_requests": 256,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": 32768,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--attn-dp-size 8",
+          "--moe-a2a-backend deepep",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 1",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 2",
+          "--mem-fraction-static 0.85",
+          "--chunked-prefill-size 32768",
+          "--max-running-requests 256"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 7790,
+          "tpot_ms": 21.9,
+          "tok_s_per_gpu": 2440
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 256,
+          "ttft_ms": 57607,
+          "tpot_ms": 33.39,
+          "tok_s_per_gpu": 2558
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-h200-fp8-low-latency",
+      "name": "GLM-5.3 · 8×H200 · fp8 · низкая задержка",
+      "model": "glm-5.3",
+      "gpu": "h200-141g",
+      "quant": "fp8",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "main @ 20a491d1d311",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.8,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6",
+          "--mem-fraction-static 0.8"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 780,
+          "tpot_ms": 3.71,
+          "tok_s_per_gpu": 252
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 5499,
+          "tpot_ms": 14.2,
+          "tok_s_per_gpu": 920
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-flash-b200-nvfp4-low-latency",
+      "name": "GLM-5.3-Flash · 8×B200 · nvfp4 · низкая задержка",
+      "model": "glm-5.3-flash",
+      "gpu": "b200-180g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "f040cc72e6",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": "fp8_e4m3",
+        "nnodes": 1,
+        "flags": [
+          "--quantization modelopt_fp4",
+          "--tp-size 8",
+          "--dsa-prefill-backend trtllm",
+          "--dsa-decode-backend trtllm",
+          "--kv-cache-dtype fp8_e4m3",
+          "--moe-runner-backend flashinfer_trtllm",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 352.45,
+          "tpot_ms": 3.75,
+          "tok_s_per_gpu": 274.8
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 2456.16,
+          "tpot_ms": 6.43,
+          "tok_s_per_gpu": 2037.52
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3-Flash",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-flash-b300-native-low-latency",
+      "name": "GLM-5.3-Flash · 8×B300 · native · низкая задержка",
+      "model": "glm-5.3-flash",
+      "gpu": "b300-288g",
+      "quant": "native",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "f040cc72e6",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [],
+        "gpus": 8,
+        "flags_note": "ячейка рецепта не найдена — флаги неизвестны"
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 230.34,
+          "tpot_ms": 3.37,
+          "tok_s_per_gpu": 313.02
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 1908.02,
+          "tpot_ms": 5.83,
+          "tok_s_per_gpu": 2338.81
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3-Flash",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-flash-gb300-fp8-high-throughput-fp8-trtllm",
+      "name": "GLM-5.3-Flash · 4×GB300 · fp8 · макс. пропускная способность",
+      "model": "glm-5.3-flash",
+      "gpu": "gb300-288g",
+      "quant": "fp8",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "d6ab04bdf1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [],
+        "gpus": 4,
+        "flags_note": "ячейка рецепта не найдена — флаги неизвестны"
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 16,
+          "ttft_ms": 581.52,
+          "tpot_ms": 10.79,
+          "tok_s_per_gpu": 1533.84
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 64,
+          "ttft_ms": 1459.62,
+          "tpot_ms": 17.68,
+          "tok_s_per_gpu": 3423.26
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 256,
+          "ttft_ms": 3908.3,
+          "tpot_ms": 36.12,
+          "tok_s_per_gpu": 6221.28
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3-Flash",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-flash-gb300-fp8-low-latency-fp8-trtllm",
+      "name": "GLM-5.3-Flash · 4×GB300 · fp8 · низкая задержка",
+      "model": "glm-5.3-flash",
+      "gpu": "gb300-288g",
+      "quant": "fp8",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "b3dc0388ed",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [],
+        "gpus": 4,
+        "flags_note": "ячейка рецепта не найдена — флаги неизвестны"
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 1000,
+          "osl": 1000,
+          "concurrency": 1,
+          "ttft_ms": 204.79,
+          "tpot_ms": 2.0,
+          "tok_s_per_gpu": 227.06
+        },
+        {
+          "isl": 1000,
+          "osl": 1000,
+          "concurrency": 16,
+          "ttft_ms": 367.48,
+          "tpot_ms": 4.8,
+          "tok_s_per_gpu": 1492.93
+        },
+        {
+          "isl": 1000,
+          "osl": 1000,
+          "concurrency": 80,
+          "ttft_ms": 1243.26,
+          "tpot_ms": 6.28,
+          "tok_s_per_gpu": 4487.92
+        },
+        {
+          "isl": 8000,
+          "osl": 1000,
+          "concurrency": 1,
+          "ttft_ms": 237.02,
+          "tpot_ms": 1.95,
+          "tok_s_per_gpu": 1029.64
+        },
+        {
+          "isl": 8000,
+          "osl": 1000,
+          "concurrency": 16,
+          "ttft_ms": 986.68,
+          "tpot_ms": 5.16,
+          "tok_s_per_gpu": 5550.31
+        },
+        {
+          "isl": 8000,
+          "osl": 1000,
+          "concurrency": 80,
+          "ttft_ms": 7085.4,
+          "tpot_ms": 11.65,
+          "tok_s_per_gpu": 8557.31
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3-Flash",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-flash-gb300-nvfp4-high-throughput",
+      "name": "GLM-5.3-Flash · 4×GB300 · nvfp4 · макс. пропускная способность",
+      "model": "glm-5.3-flash",
+      "gpu": "gb300-288g",
+      "quant": "nvfp4",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "d6ab04bdf1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": "fp8_e4m3",
+        "nnodes": 1,
+        "flags": [
+          "--quantization modelopt_fp4",
+          "--tp-size 4",
+          "--dsa-prefill-backend trtllm",
+          "--dsa-decode-backend trtllm",
+          "--kv-cache-dtype fp8_e4m3",
+          "--moe-runner-backend flashinfer_trtllm"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 16,
+          "ttft_ms": 586.33,
+          "tpot_ms": 11.51,
+          "tok_s_per_gpu": 1451.53
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 64,
+          "ttft_ms": 1461.23,
+          "tpot_ms": 18.36,
+          "tok_s_per_gpu": 3325.3
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 256,
+          "ttft_ms": 3912.74,
+          "tpot_ms": 37.69,
+          "tok_s_per_gpu": 6035.41
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3-Flash",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-flash-gb300-nvfp4-low-latency",
+      "name": "GLM-5.3-Flash · 4×GB300 · nvfp4 · низкая задержка",
+      "model": "glm-5.3-flash",
+      "gpu": "gb300-288g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "d6ab04bdf1",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": "EAGLE",
+        "kv_cache_dtype": "fp8_e4m3",
+        "nnodes": 1,
+        "flags": [
+          "--quantization modelopt_fp4",
+          "--tp-size 4",
+          "--dsa-prefill-backend trtllm",
+          "--dsa-decode-backend trtllm",
+          "--kv-cache-dtype fp8_e4m3",
+          "--moe-runner-backend flashinfer_trtllm",
+          "--speculative-algorithm EAGLE",
+          "--speculative-num-steps 5",
+          "--speculative-eagle-topk 1",
+          "--speculative-num-draft-tokens 6"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 1,
+          "ttft_ms": 219.15,
+          "tpot_ms": 3.94,
+          "tok_s_per_gpu": 261.03
+        },
+        {
+          "isl": 1024,
+          "osl": 256,
+          "concurrency": 16,
+          "ttft_ms": 598.41,
+          "tpot_ms": 6.43,
+          "tok_s_per_gpu": 2280.83
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3-Flash",
+      "note": ""
+    },
+    {
+      "id": "glm-5.3-flash-h100-native-low-latency",
+      "name": "GLM-5.3-Flash · 8×H100 · native · низкая задержка",
+      "model": "glm-5.3-flash",
+      "gpu": "h100-80g",
+      "quant": "native",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "f040cc72e6",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [],
+        "gpus": 8,
+        "flags_note": "ячейка рецепта не найдена — флаги неизвестны"
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 345.66,
+          "tpot_ms": 4.37,
+          "tok_s_per_gpu": 239.19
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 3442.21,
+          "tpot_ms": 10.24,
+          "tok_s_per_gpu": 1323.44
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/GLM/GLM-5.3-Flash",
+      "note": ""
+    },
+    {
+      "id": "kimi-k2.6-h200-int4-default",
+      "name": "Kimi-K2.6 · 8×H200 TP8 · int4 · замер K2.5",
+      "model": "kimi-k2.6",
+      "gpu": "h200-141g",
+      "quant": "int4",
+      "strategy": "default",
+      "engine": {
+        "name": "sglang",
+        "version": "0.5.9",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 8,
+        "gpus": 8,
+        "nnodes": 1,
+        "flags": [
+          "--tp 8"
+        ]
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 610,
+          "osl": 422,
+          "concurrency": 1,
+          "ttft_ms": 176.89,
+          "tpot_ms": 9.22,
+          "tok_s_per_gpu": 32.4
+        },
+        {
+          "isl": 496,
+          "osl": 510,
+          "concurrency": 16,
+          "ttft_ms": 374.3,
+          "tpot_ms": 53.25,
+          "tok_s_per_gpu": 63.6
+        }
+      ],
+      "measurement_kind": "bench_serving, random (длины случайные — указаны средние)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Moonshotai/Kimi-K2.6",
+      "note": "Cookbook: замер сделан на K2.5 (та же архитектура), SGLang 0.5.9, без DP-attention — вероятно, не оптимальная конфигурация."
+    },
+    {
+      "id": "kimi-k3-b300-mxfp4-balanced-dspark",
+      "name": "Kimi-K3 · 8×B300 · mxfp4 · баланс · spec dspark",
+      "model": "kimi-k3",
+      "gpu": "b300-288g",
+      "quant": "mxfp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "v0.5.18 @ 71de97b2",
+        "image": "lmsysorg/sglang:kimi-k3",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp-size 8",
+          "--dcp-size 8",
+          "--mem-fraction-static 0.85",
+          "--reasoning-parser kimi_k3",
+          "--tool-call-parser kimi_k3"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 12038,
+          "tpot_ms": 24.47,
+          "tok_s_per_gpu": 1987
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Moonshotai/Kimi-K3",
+      "note": ""
+    },
+    {
+      "id": "kimi-k3-b300-mxfp4-balanced-none",
+      "name": "Kimi-K3 · 8×B300 · mxfp4 · баланс · spec none",
+      "model": "kimi-k3",
+      "gpu": "b300-288g",
+      "quant": "mxfp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "v0.5.18 @ 71de97b2",
+        "image": "lmsysorg/sglang:kimi-k3",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp-size 8",
+          "--dcp-size 8",
+          "--mem-fraction-static 0.85",
+          "--reasoning-parser kimi_k3",
+          "--tool-call-parser kimi_k3"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 11635,
+          "tpot_ms": 40.19,
+          "tok_s_per_gpu": 1395
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Moonshotai/Kimi-K3",
+      "note": ""
+    },
+    {
+      "id": "kimi-k3-b300-mxfp4-low-latency-dspark",
+      "name": "Kimi-K3 · 8×B300 · mxfp4 · низкая задержка · spec dspark",
+      "model": "kimi-k3",
+      "gpu": "b300-288g",
+      "quant": "mxfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "v0.5.18 @ 71de97b2",
+        "image": "lmsysorg/sglang:kimi-k3",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp-size 8",
+          "--mem-fraction-static 0.85",
+          "--reasoning-parser kimi_k3",
+          "--tool-call-parser kimi_k3"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 389,
+          "tpot_ms": 2.84,
+          "tok_s_per_gpu": 351
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 3942,
+          "tpot_ms": 9.88,
+          "tok_s_per_gpu": 1319
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Moonshotai/Kimi-K3",
+      "note": ""
+    },
+    {
+      "id": "kimi-k3-b300-mxfp4-low-latency-none",
+      "name": "Kimi-K3 · 8×B300 · mxfp4 · низкая задержка · spec none",
+      "model": "kimi-k3",
+      "gpu": "b300-288g",
+      "quant": "mxfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "v0.5.18 @ 71de97b2",
+        "image": "lmsysorg/sglang:kimi-k3",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp-size 8",
+          "--mem-fraction-static 0.85",
+          "--reasoning-parser kimi_k3",
+          "--tool-call-parser kimi_k3"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 378,
+          "tpot_ms": 8.51,
+          "tok_s_per_gpu": 127
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 3539,
+          "tpot_ms": 19.47,
+          "tok_s_per_gpu": 785
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Moonshotai/Kimi-K3",
+      "note": ""
+    },
+    {
+      "id": "kimi-k3-b300-nvfp4-balanced-dspark",
+      "name": "Kimi-K3 · 8×B300 · nvfp4 · баланс · spec dspark",
+      "model": "kimi-k3",
+      "gpu": "b300-288g",
+      "quant": "nvfp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "v0.5.18 @ 71de97b2",
+        "image": "lmsysorg/sglang:kimi-k3",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp-size 8",
+          "--dcp-size 8",
+          "--mem-fraction-static 0.85",
+          "--reasoning-parser kimi_k3",
+          "--tool-call-parser kimi_k3"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 11664,
+          "tpot_ms": 22.17,
+          "tok_s_per_gpu": 1946
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Moonshotai/Kimi-K3",
+      "note": ""
+    },
+    {
+      "id": "kimi-k3-b300-nvfp4-balanced-none",
+      "name": "Kimi-K3 · 8×B300 · nvfp4 · баланс · spec none",
+      "model": "kimi-k3",
+      "gpu": "b300-288g",
+      "quant": "nvfp4",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "v0.5.18 @ 71de97b2",
+        "image": "lmsysorg/sglang:kimi-k3",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp-size 8",
+          "--dcp-size 8",
+          "--mem-fraction-static 0.85",
+          "--reasoning-parser kimi_k3",
+          "--tool-call-parser kimi_k3"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 11063,
+          "tpot_ms": 41.55,
+          "tok_s_per_gpu": 1373
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Moonshotai/Kimi-K3",
+      "note": ""
+    },
+    {
+      "id": "kimi-k3-b300-nvfp4-low-latency-dspark",
+      "name": "Kimi-K3 · 8×B300 · nvfp4 · низкая задержка · spec dspark",
+      "model": "kimi-k3",
+      "gpu": "b300-288g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "v0.5.18 @ 71de97b2",
+        "image": "lmsysorg/sglang:kimi-k3",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp-size 8",
+          "--mem-fraction-static 0.85",
+          "--reasoning-parser kimi_k3",
+          "--tool-call-parser kimi_k3"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 380,
+          "tpot_ms": 3.24,
+          "tok_s_per_gpu": 313
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 3765,
+          "tpot_ms": 9.77,
+          "tok_s_per_gpu": 1345
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Moonshotai/Kimi-K3",
+      "note": ""
+    },
+    {
+      "id": "kimi-k3-b300-nvfp4-low-latency-none",
+      "name": "Kimi-K3 · 8×B300 · nvfp4 · низкая задержка · spec none",
+      "model": "kimi-k3",
+      "gpu": "b300-288g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "v0.5.18 @ 71de97b2",
+        "image": "lmsysorg/sglang:kimi-k3",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.85,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--tp-size 8",
+          "--mem-fraction-static 0.85",
+          "--reasoning-parser kimi_k3",
+          "--tool-call-parser kimi_k3"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 369,
+          "tpot_ms": 10.12,
+          "tok_s_per_gpu": 107
+        },
+        {
+          "isl": 8192,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 3387,
+          "tpot_ms": 20.94,
+          "tok_s_per_gpu": 742
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Moonshotai/Kimi-K3",
+      "note": ""
+    },
+    {
+      "id": "minimax-m3-b200-mxfp8-balanced",
+      "name": "MiniMax-M3 · 8×B200 · mxfp8 · баланс",
+      "model": "minimax-m3",
+      "gpu": "b200-180g",
+      "quant": "mxfp8",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "PR #27944",
+        "image": "lmsysorg/sglang:dev-minimax-m3",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.65,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--reasoning-parser auto",
+          "--tool-call-parser auto",
+          "--tp 8",
+          "--attention-backend fa4",
+          "--moe-runner-backend deep_gemm",
+          "--chunked-prefill-size 8192",
+          "--mem-fraction-static 0.65"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 2048,
+          "osl": 256,
+          "concurrency": 64,
+          "ttft_ms": 1580,
+          "tpot_ms": 24.1,
+          "tok_s_per_gpu": 2385
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/MiniMax/MiniMax-M3",
+      "note": ""
+    },
+    {
+      "id": "minimax-m3-b300-mxfp8-balanced",
+      "name": "MiniMax-M3 · 4×B300 · mxfp8 · баланс",
+      "model": "minimax-m3",
+      "gpu": "b300-288g",
+      "quant": "mxfp8",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "PR #27944",
+        "image": "lmsysorg/sglang:dev-cu13-minimax-m3",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.75,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--reasoning-parser auto",
+          "--tool-call-parser auto",
+          "--tp 4",
+          "--attention-backend fa4",
+          "--moe-runner-backend deep_gemm",
+          "--chunked-prefill-size 8192",
+          "--mem-fraction-static 0.75"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 2048,
+          "osl": 256,
+          "concurrency": 64,
+          "ttft_ms": null,
+          "tpot_ms": 32.8,
+          "tok_s_per_gpu": 3285
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/MiniMax/MiniMax-M3",
+      "note": ""
+    },
+    {
+      "id": "minimax-m3-gb300-mxfp8-balanced",
+      "name": "MiniMax-M3 · 4×GB300 · mxfp8 · баланс",
+      "model": "minimax-m3",
+      "gpu": "gb300-288g",
+      "quant": "mxfp8",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "PR #27944",
+        "image": "lmsysorg/sglang:dev-cu13-minimax-m3",
+        "tp": 4,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.75,
+        "chunked_prefill_size": 8192,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--reasoning-parser auto",
+          "--tool-call-parser auto",
+          "--tp 4",
+          "--attention-backend fa4",
+          "--moe-runner-backend deep_gemm",
+          "--chunked-prefill-size 8192",
+          "--mem-fraction-static 0.75"
+        ],
+        "gpus": 4
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 2048,
+          "osl": 256,
+          "concurrency": 64,
+          "ttft_ms": 4746,
+          "tpot_ms": 39.3,
+          "tok_s_per_gpu": 2493
+        },
+        {
+          "isl": 8192,
+          "osl": 256,
+          "concurrency": 24,
+          "ttft_ms": 3324,
+          "tpot_ms": 32.9,
+          "tok_s_per_gpu": 4323
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/MiniMax/MiniMax-M3",
+      "note": ""
+    },
+    {
+      "id": "minimax-m3-h200-bf16-balanced",
+      "name": "MiniMax-M3 · 8×H200 · bf16 · баланс",
+      "model": "minimax-m3",
+      "gpu": "h200-141g",
+      "quant": "bf16",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "PR #27944",
+        "image": "lmsysorg/sglang:dev-cu12-minimax-m3",
+        "tp": 8,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": 0.75,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [
+          "--reasoning-parser auto",
+          "--tool-call-parser auto",
+          "--tp 8",
+          "--mem-fraction-static 0.75"
+        ],
+        "gpus": 8
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 2048,
+          "osl": 256,
+          "concurrency": 64,
+          "ttft_ms": 1054,
+          "tpot_ms": 70.8,
+          "tok_s_per_gpu": 1044
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/MiniMax/MiniMax-M3",
+      "note": ""
+    },
+    {
+      "id": "minimax-m3.1-flash-b300-nvfp4-low-latency",
+      "name": "MiniMax-M3.1-Flash · 4×B300 TP4 · nvfp4 · без замеров скорости",
+      "model": "minimax-m3.1-flash",
+      "gpu": "b300-288g",
+      "quant": "nvfp4",
+      "strategy": "low-latency",
+      "engine": {
+        "name": "sglang",
+        "version": "",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "gpus": 4,
+        "nnodes": 1,
+        "mem_fraction_static": 0.8,
+        "speculative": "DSPARK",
+        "flags": [
+          "--tp 4",
+          "--mem-fraction-static 0.8",
+          "--speculative-algorithm DSPARK"
+        ]
+      },
+      "capacity": {
+        "kv_pool_tokens": 10400000
+      },
+      "measurements": [],
+      "measurement_kind": "",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/MiniMax/MiniMax-M3.1",
+      "note": "Cookbook: KV-пул ~10,4 млн токенов при mem-fraction 0,8 (6,5 млн с MonoKernel). Скорость — оценка по roofline."
+    },
+    {
+      "id": "mistral-medium-3.5-h200-fp8-default",
+      "name": "Mistral Medium 3.5 · 4×H200 TP4 · fp8",
+      "model": "mistral-medium-3.5",
+      "gpu": "h200-141g",
+      "quant": "fp8",
+      "strategy": "default",
+      "engine": {
+        "name": "sglang",
+        "version": "",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 4,
+        "gpus": 4,
+        "nnodes": 1,
+        "flags": [
+          "--tp 4"
+        ]
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 610,
+          "osl": 268,
+          "concurrency": 1,
+          "ttft_ms": 95.9,
+          "tpot_ms": 14.19,
+          "tok_s_per_gpu": null
+        },
+        {
+          "isl": 513,
+          "osl": 262,
+          "concurrency": 100,
+          "ttft_ms": 152.95,
+          "tpot_ms": 42.53,
+          "tok_s_per_gpu": 1652
+        }
+      ],
+      "measurement_kind": "bench_serving, random (длины случайные — указаны средние), медианы",
+      "verified": true,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Mistral/Mistral-Medium-3.5",
+      "note": ""
+    },
+    {
+      "id": "qwen3.8-27b-gb300-bf16-balanced",
+      "name": "Qwen3.8-27B · 1×GB300 · bf16 · баланс",
+      "model": "qwen3.8-27b",
+      "gpu": "gb300-288g",
+      "quant": "bf16",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "lmsysorg/sglang:dev @ c4271c3fe",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 1,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [],
+        "gpus": 1,
+        "flags_note": "ячейка рецепта не найдена — флаги неизвестны"
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 72,
+          "tpot_ms": 10.3,
+          "tok_s_per_gpu": 97
+        },
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 490,
+          "tpot_ms": 12.5,
+          "tok_s_per_gpu": 1235
+        },
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 1622,
+          "tpot_ms": 18.4,
+          "tok_s_per_gpu": 3208
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Qwen/Qwen3.8-27B",
+      "note": ""
+    },
+    {
+      "id": "qwen3.8-27b-gb300-bf16-high-throughput",
+      "name": "Qwen3.8-27B · 1×GB300 · bf16 · макс. пропускная способность",
+      "model": "qwen3.8-27b",
+      "gpu": "gb300-288g",
+      "quant": "bf16",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "lmsysorg/sglang:dev @ c4271c3fe",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 1,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [],
+        "gpus": 1,
+        "flags_note": "ячейка рецепта не найдена — флаги неизвестны"
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 76,
+          "tpot_ms": 4.0,
+          "tok_s_per_gpu": 245
+        },
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 211,
+          "tpot_ms": 6.3,
+          "tok_s_per_gpu": 2306
+        },
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 3894,
+          "tpot_ms": 10.9,
+          "tok_s_per_gpu": 3995
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Qwen/Qwen3.8-27B",
+      "note": ""
+    },
+    {
+      "id": "qwen3.8-27b-gb300-fp8-balanced",
+      "name": "Qwen3.8-27B · 1×GB300 · fp8 · баланс",
+      "model": "qwen3.8-27b",
+      "gpu": "gb300-288g",
+      "quant": "fp8",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "lmsysorg/sglang:dev @ c4271c3fe",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 1,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [],
+        "gpus": 1,
+        "flags_note": "ячейка рецепта не найдена — флаги неизвестны"
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 73,
+          "tpot_ms": 8.2,
+          "tok_s_per_gpu": 121
+        },
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 586,
+          "tpot_ms": 11.2,
+          "tok_s_per_gpu": 1355
+        },
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 1539,
+          "tpot_ms": 19.7,
+          "tok_s_per_gpu": 3012
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Qwen/Qwen3.8-27B",
+      "note": ""
+    },
+    {
+      "id": "qwen3.8-27b-gb300-fp8-high-throughput",
+      "name": "Qwen3.8-27B · 1×GB300 · fp8 · макс. пропускная способность",
+      "model": "qwen3.8-27b",
+      "gpu": "gb300-288g",
+      "quant": "fp8",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "lmsysorg/sglang:dev @ c4271c3fe",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 1,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [],
+        "gpus": 1,
+        "flags_note": "ячейка рецепта не найдена — флаги неизвестны"
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 74,
+          "tpot_ms": 3.2,
+          "tok_s_per_gpu": 302
+        },
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 174,
+          "tpot_ms": 5.3,
+          "tok_s_per_gpu": 2771
+        },
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 3376,
+          "tpot_ms": 9.5,
+          "tok_s_per_gpu": 4599
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Qwen/Qwen3.8-27B",
+      "note": ""
+    },
+    {
+      "id": "qwen3.8-27b-gb300-nvfp4-fp4-head-balanced",
+      "name": "Qwen3.8-27B · 1×GB300 · nvfp4-fp4-head · баланс",
+      "model": "qwen3.8-27b",
+      "gpu": "gb300-288g",
+      "quant": "nvfp4-fp4-head",
+      "strategy": "balanced",
+      "engine": {
+        "name": "sglang",
+        "version": "lmsysorg/sglang:dev @ c4271c3fe",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 1,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [],
+        "gpus": 1,
+        "flags_note": "ячейка рецепта не найдена — флаги неизвестны"
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 79,
+          "tpot_ms": 6.4,
+          "tok_s_per_gpu": 155
+        },
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 715,
+          "tpot_ms": 8.5,
+          "tok_s_per_gpu": 1742
+        },
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 1216,
+          "tpot_ms": 13.6,
+          "tok_s_per_gpu": 4316
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Qwen/Qwen3.8-27B",
+      "note": ""
+    },
+    {
+      "id": "qwen3.8-27b-gb300-nvfp4-fp4-head-high-throughput",
+      "name": "Qwen3.8-27B · 1×GB300 · nvfp4-fp4-head · макс. пропускная способность",
+      "model": "qwen3.8-27b",
+      "gpu": "gb300-288g",
+      "quant": "nvfp4-fp4-head",
+      "strategy": "high-throughput",
+      "engine": {
+        "name": "sglang",
+        "version": "lmsysorg/sglang:dev @ c4271c3fe",
+        "image": "lmsysorg/sglang:latest",
+        "tp": 1,
+        "ep": null,
+        "attn_dp": null,
+        "max_running_requests": null,
+        "mem_fraction_static": null,
+        "chunked_prefill_size": null,
+        "cuda_graph_max_bs": null,
+        "prefill_decode_interval": null,
+        "speculative": null,
+        "kv_cache_dtype": null,
+        "nnodes": 1,
+        "flags": [],
+        "gpus": 1,
+        "flags_note": "ячейка рецепта не найдена — флаги неизвестны"
+      },
+      "capacity": {},
+      "measurements": [
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 1,
+          "ttft_ms": 73,
+          "tpot_ms": 2.3,
+          "tok_s_per_gpu": 415
+        },
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 16,
+          "ttft_ms": 216,
+          "tpot_ms": 4.4,
+          "tok_s_per_gpu": 3256
+        },
+        {
+          "isl": 1024,
+          "osl": 1024,
+          "concurrency": 64,
+          "ttft_ms": 3085,
+          "tpot_ms": 8.6,
+          "tok_s_per_gpu": 5155
+        }
+      ],
+      "measurement_kind": "bench_serving, random, фиксированная параллельность (закрытый цикл)",
+      "verified": false,
+      "source": "https://docs.sglang.io/cookbook/autoregressive/Qwen/Qwen3.8-27B",
+      "note": ""
+    }
+  ]
+}

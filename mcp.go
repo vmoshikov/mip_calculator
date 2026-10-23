@@ -206,6 +206,75 @@ var mcpTools = []mcpTool{
 		},
 	},
 	{
+		Name: "list_profiles",
+		Description: "Профили движка SGLang из cookbook и замеров: модель, GPU, число GPU, TP/EP, стратегия, версия SGLang, флаги запуска, " +
+			"число точек замеров. Фильтры model и gpu необязательны.",
+		InputSchema: obj(map[string]any{
+			"model": map[string]any{"type": "string"},
+			"gpu":   map[string]any{"type": "string"},
+		}),
+		handler: func(s *Store, raw json.RawMessage) (any, error) {
+			a, err := decodeArgs[struct{ Model, GPU string }](raw)
+			if err != nil {
+				return nil, err
+			}
+			type row struct {
+				ID, Name, Model, GPU, Strategy, Quant, Version string
+				GPUs, Measurements                             int
+				Verified                                       bool
+				Flags                                          []string
+			}
+			var out []row
+			for _, p := range s.Profiles.Get().Profiles {
+				if (a.Model != "" && p.Model != a.Model) || (a.GPU != "" && p.GPU != a.GPU) {
+					continue
+				}
+				out = append(out, row{p.ID, p.Name, p.Model, p.GPU, p.Strategy, p.Quant, p.Engine.Version,
+					p.Engine.GPUs, len(p.Measurements), p.Verified, p.Engine.Flags})
+			}
+			return map[string]any{"profiles": out}, nil
+		},
+	},
+	{
+		Name:        "list_workloads",
+		Description: "Профили нагрузки (распределения длин входа и выхода, prefix cache). Помеченные stub — заглушки, их надо заменить реальными данными.",
+		InputSchema: obj(map[string]any{}),
+		handler:     func(s *Store, _ json.RawMessage) (any, error) { return s.Workloads.Get(), nil },
+	},
+	{
+		Name: "plan_limits",
+		Description: "Подбор --max-running-requests и предела RPS на инстанс SGLang под цель TTFT P99 (и TPOT P99). " +
+			"Симулирует очередь и планировщик SGLang на модели скорости, подогнанной под замеры профиля. " +
+			"Пример: profile=deepseek-v4.1-flash-b300-fp4-high-throughput, workload=agent, ttft_p99_ms=40000, servers=3, gpus_per_server=8. " +
+			"max-running-requests — число одновременно выполняемых запросов на инстанс, RPS — входящий поток запросов в секунду.",
+		InputSchema: obj(map[string]any{
+			"profile":         map[string]any{"type": "string", "description": "id профиля (list_profiles); без него — model + gpu с оценкой по roofline"},
+			"model":           map[string]any{"type": "string"},
+			"gpu":             map[string]any{"type": "string"},
+			"workload":        map[string]any{"type": "string", "description": "id профиля нагрузки (list_workloads)"},
+			"workload_inline": map[string]any{"type": "object", "description": "своя нагрузка: {input:{distribution,p50,p99}, output:{...}, prefix_cache_hit}"},
+			"ttft_p99_ms":     map[string]any{"type": "number", "description": "цель TTFT P99, мс (по умолчанию 40000)"},
+			"tpot_p99_ms":     map[string]any{"type": "number", "description": "цель TPOT P99, мс (необязательно)"},
+			"servers":         map[string]any{"type": "integer"},
+			"gpus_per_server": map[string]any{"type": "integer"},
+			"instances":       map[string]any{"type": "integer", "description": "число инстансов (вместо servers)"},
+			"headroom":        map[string]any{"type": "number", "description": "доля от предельного RPS для лимита, по умолчанию 0.8"},
+			"mrr_candidates":  map[string]any{"type": "array", "items": map[string]any{"type": "integer"}},
+		}),
+		handler: func(s *Store, raw json.RawMessage) (any, error) {
+			req, err := decodeArgs[PlanRequest](raw)
+			if err != nil {
+				return nil, err
+			}
+			res, err := PlanLimits(s, req)
+			if err != nil {
+				return nil, err
+			}
+			res.Curve = nil // агенту хватит таблицы
+			return res, nil
+		},
+	},
+	{
 		Name: "upsert_model",
 		Description: "Добавить или обновить модель (по id). Поля: id, name, vendor, total_params_b, active_params_b, layers, kv_layers, " +
 			"attention (gqa|mla|custom), kv_heads, head_dim, kv_lora_rank, qk_rope_dim, kv_bytes_per_token, kv_fixed, kv_extra_bytes_per_token, " +
@@ -292,6 +361,7 @@ func (m *MCPServer) Handle(raw []byte) *rpcResponse {
 			"serverInfo":      map[string]any{"name": "mip-gpu-calc", "title": "Калькулятор GPU для MIP", "version": "1.0.0"},
 			"instructions": "Калькулятор размера кластера для LLM в MIP (платформа управляемого инференса). " +
 				"Сначала list_models / list_gpus / list_interconnects, затем calculate, compare_gpus, recommend или pd_disaggregation. " +
+				"Для лимитов SGLang (max-running-requests и RPS под TTFT P99): list_profiles, list_workloads, plan_limits. " +
 				"Память: веса + KV-кэш (context_len × concurrency) + накладные на GPU ≤ VRAM × mem_util. " +
 				"Стоимость — в рублях: ₽/час, ₽ за токен и за 1 млн сгенерированных токенов с учётом prefill.",
 		}

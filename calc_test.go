@@ -7,6 +7,15 @@ import (
 	"testing"
 )
 
+func testStore(t *testing.T) *Store {
+	t.Helper()
+	s, err := NewStore(t.TempDir() + "/config.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return s
+}
+
 func testConfig(t *testing.T) Config {
 	t.Helper()
 	var c Config
@@ -19,11 +28,11 @@ func testConfig(t *testing.T) Config {
 	return c
 }
 
-func TestKVPerTokenLlama405B(t *testing.T) {
+func TestKVPerTokenMistralMedium(t *testing.T) {
 	c := testConfig(t)
-	m, _ := c.FindModel("llama-3.1-405b")
-	// 2 × 126 слоёв × 8 голов × 128 × 2 байта = 516096 Б
-	if got := kvBytesPerToken(m, 2); got != 516096 {
+	m, _ := c.FindModel("mistral-medium-3.5")
+	// 2 × 88 слоёв × 8 KV-голов × 128 × 2 байта = 360448 Б
+	if got := kvBytesPerToken(m, 2); got != 360448 {
 		t.Fatalf("KV байт/токен = %v", got)
 	}
 }
@@ -46,7 +55,7 @@ func TestDeepSeekV32FP8(t *testing.T) {
 
 func TestSmallModelPacksReplicas(t *testing.T) {
 	c := testConfig(t)
-	res, _ := Calculate(c, Request{Model: "gpt-oss-120b", GPU: "b200-180g", Precision: "fp4", Replicas: 3})
+	res, _ := Calculate(c, Request{Model: "gigachat3.1-lightning", GPU: "b200-180g", Replicas: 3})
 	if res.GPUsPerReplica != 1 || res.TotalGPUs != 3 || res.TotalNodes != 1 {
 		t.Fatalf("получили %d на реплику, всего %d, нод %d", res.GPUsPerReplica, res.TotalGPUs, res.TotalNodes)
 	}
@@ -55,9 +64,9 @@ func TestSmallModelPacksReplicas(t *testing.T) {
 func TestNoFitAndWarnings(t *testing.T) {
 	c := testConfig(t)
 	c.Platform.MaxGPUsPerReplica = 8
-	res, _ := Calculate(c, Request{Model: "kimi-k2", GPU: "a100-80g", Precision: "bf16"})
+	res, _ := Calculate(c, Request{Model: "kimi-k3", GPU: "a100-80g", Precision: "bf16"})
 	if res.Fits || res.Reason == "" {
-		t.Fatal("kimi-k2 в bf16 не должна помещаться в 8×A100")
+		t.Fatal("kimi-k3 в bf16 не должна помещаться в 8×A100")
 	}
 	if !strings.Contains(strings.Join(res.Warnings, ";"), "fp8") && len(res.Warnings) == 0 {
 		t.Fatal("ожидались предупреждения")
@@ -65,10 +74,7 @@ func TestNoFitAndWarnings(t *testing.T) {
 }
 
 func TestMCPToolsCall(t *testing.T) {
-	c := testConfig(t)
-	s := &Store{cfg: c, path: t.TempDir() + "/c.json"}
-	_ = s.Replace(c)
-	srv := &MCPServer{store: s}
+	srv := &MCPServer{store: testStore(t)}
 	resp := srv.Handle([]byte(`{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"recommend","arguments":{"model":"glm-5.2"}}}`))
 	if resp.Error != nil {
 		t.Fatal(resp.Error.Message)
@@ -140,11 +146,11 @@ func TestDisaggregation(t *testing.T) {
 	if moe.Best.Mode != ModeColocated {
 		t.Errorf("GLM-5.2 короткий prompt: лучший %q, ожидался совмещённый", moe.Best.Label)
 	}
-	// плотная 405B с длинным prompt: prefill тяжёлый, P/D дешевле
-	dense, _ := Disaggregation(c, Request{Model: "llama-3.1-405b", GPU: "h200-141g", Precision: "fp8",
+	// плотная 128B с длинным prompt: prefill тяжёлый, P/D дешевле
+	dense, _ := Disaggregation(c, Request{Model: "mistral-medium-3.5", GPU: "h200-141g", Precision: "fp8",
 		ContextLen: 65536, InputTokens: 32768, OutputTokens: 512, Concurrency: 16, TTFTSLOms: 5000})
 	if dense.Best.Mode != ModeDisagg || dense.SavingsPct <= 0 {
-		t.Errorf("Llama 405B длинный prompt: лучший %q, экономия %.1f%%", dense.Best.Label, dense.SavingsPct)
+		t.Errorf("Mistral Medium 3.5 длинный prompt: лучший %q, экономия %.1f%%", dense.Best.Label, dense.SavingsPct)
 	}
 	if !dense.Best.RDMA {
 		t.Errorf("при цели TTFT 5 с лучший вариант должен быть с RDMA, получили %q", dense.Best.Label)

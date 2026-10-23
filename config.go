@@ -2,12 +2,9 @@ package main
 
 import (
 	_ "embed"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"sync"
-	"time"
+	"path/filepath"
 )
 
 //go:embed config.default.json
@@ -210,89 +207,29 @@ func (c *Config) Validate() error {
 	return errors.Join(errs...)
 }
 
-// Store хранит конфиг в памяти и на диске. Правки файла подхватываются при следующем чтении.
+// Store — конфиг, профили движка и профили нагрузки. Каждый хранится в своём JSON-файле
+// рядом с config.json; правки файлов подхватываются при следующем чтении.
 type Store struct {
-	mu    sync.RWMutex
-	path  string
-	cfg   Config
-	mtime time.Time
+	*JSONStore[Config]
+	Profiles  *JSONStore[ProfilesDoc]
+	Workloads *JSONStore[WorkloadsDoc]
 }
 
-func NewStore(path string) (*Store, error) {
-	s := &Store{path: path}
-	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		if err := os.WriteFile(path, defaultConfigJSON, 0o644); err != nil {
-			return nil, fmt.Errorf("запись конфига по умолчанию: %w", err)
-		}
-	}
-	if err := s.load(); err != nil {
+func NewStore(cfgPath string) (*Store, error) {
+	cfg, err := NewJSONStore(cfgPath, defaultConfigJSON, (*Config).Validate)
+	if err != nil {
 		return nil, err
 	}
-	return s, nil
-}
-
-func (s *Store) load() error {
-	st, err := os.Stat(s.path)
+	dir := filepath.Dir(cfgPath)
+	prof, err := NewJSONStore(filepath.Join(dir, "profiles.json"), defaultProfilesJSON, (*ProfilesDoc).Validate)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	raw, err := os.ReadFile(s.path)
+	wl, err := NewJSONStore(filepath.Join(dir, "workloads.json"), defaultWorkloadsJSON, (*WorkloadsDoc).Validate)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	var c Config
-	if err := json.Unmarshal(raw, &c); err != nil {
-		return fmt.Errorf("разбор %s: %w", s.path, err)
-	}
-	if err := c.Validate(); err != nil {
-		return fmt.Errorf("некорректный %s: %w", s.path, err)
-	}
-	s.cfg, s.mtime = c, st.ModTime()
-	return nil
-}
-
-// Get возвращает текущий конфиг и перечитывает файл, если он изменился.
-func (s *Store) Get() Config {
-	s.mu.RLock()
-	st, err := os.Stat(s.path)
-	stale := err == nil && !st.ModTime().Equal(s.mtime)
-	cfg := s.cfg
-	s.mu.RUnlock()
-	if !stale {
-		return cfg
-	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if err := s.load(); err != nil {
-		// оставляем последний рабочий конфиг: недописанный файл не должен ломать сервис
-		logf("не удалось перечитать конфиг, оставляю прежний: %v", err)
-	}
-	return s.cfg
-}
-
-func (s *Store) Replace(c Config) error {
-	if err := c.Validate(); err != nil {
-		return err
-	}
-	raw, err := json.MarshalIndent(c, "", "  ")
-	if err != nil {
-		return err
-	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	tmp := s.path + ".tmp"
-	if err := os.WriteFile(tmp, append(raw, '\n'), 0o644); err != nil {
-		return err
-	}
-	if err := os.Rename(tmp, s.path); err != nil {
-		return err
-	}
-	st, err := os.Stat(s.path)
-	if err != nil {
-		return err
-	}
-	s.cfg, s.mtime = c, st.ModTime()
-	return nil
+	return &Store{JSONStore: cfg, Profiles: prof, Workloads: wl}, nil
 }
 
 func (s *Store) UpsertModel(m Model) error {

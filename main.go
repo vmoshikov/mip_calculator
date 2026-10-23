@@ -15,7 +15,7 @@ var webFS embed.FS
 
 func main() {
 	addr := flag.String("addr", envOr("ADDR", ":8080"), "адрес HTTP-сервера")
-	cfgPath := flag.String("config", envOr("CONFIG", "config.json"), "путь к конфигу (создаётся из значений по умолчанию, если нет)")
+	cfgPath := flag.String("config", envOr("CONFIG", "config.json"), "путь к конфигу; рядом лежат profiles.json и workloads.json (создаются из значений по умолчанию, если их нет)")
 	stdio := flag.Bool("stdio", false, "работать как MCP-сервер через stdio вместо HTTP")
 	flag.Parse()
 
@@ -41,7 +41,8 @@ func main() {
 	mux.Handle("/", http.FileServerFS(static))
 
 	srv := &http.Server{Addr: *addr, Handler: logRequests(mux), ReadHeaderTimeout: 10 * time.Second}
-	logf("Калькулятор GPU для MIP: http://localhost%s  ·  MCP: http://localhost%s/mcp  ·  конфиг: %s", *addr, *addr, *cfgPath)
+	logf("Калькулятор GPU для MIP: http://localhost%s  ·  MCP: http://localhost%s/mcp  ·  конфиг: %s, %s, %s",
+		*addr, *addr, *cfgPath, store.Profiles.Path(), store.Workloads.Path())
 	if err := srv.ListenAndServe(); err != nil {
 		logf("http: %v", err)
 		os.Exit(1)
@@ -86,6 +87,27 @@ func registerAPI(mux *http.ServeMux, store *Store) {
 		var req Request
 		if readJSON(w, r, &req) {
 			res, err := Disaggregation(store.Get(), req)
+			writeJSON(w, res, err)
+		}
+	})
+	mux.HandleFunc("GET /api/profiles", func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, store.Profiles.Get(), nil) })
+	mux.HandleFunc("PUT /api/profiles", func(w http.ResponseWriter, r *http.Request) {
+		var d ProfilesDoc
+		if readJSON(w, r, &d) {
+			writeJSON(w, d, store.Profiles.Replace(d))
+		}
+	})
+	mux.HandleFunc("GET /api/workloads", func(w http.ResponseWriter, _ *http.Request) { writeJSON(w, store.Workloads.Get(), nil) })
+	mux.HandleFunc("PUT /api/workloads", func(w http.ResponseWriter, r *http.Request) {
+		var d WorkloadsDoc
+		if readJSON(w, r, &d) {
+			writeJSON(w, d, store.Workloads.Replace(d))
+		}
+	})
+	mux.HandleFunc("POST /api/plan", func(w http.ResponseWriter, r *http.Request) {
+		var req PlanRequest
+		if readJSON(w, r, &req) {
+			res, err := PlanLimits(store, req)
 			writeJSON(w, res, err)
 		}
 	})

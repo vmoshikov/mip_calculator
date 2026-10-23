@@ -60,6 +60,8 @@ function showTab(name) {
   $$(".tab").forEach((x) => x.classList.toggle("active", x.dataset.tab === name));
   $$(".view").forEach((v) => v.classList.toggle("active", v.id === "view-" + name));
   store.set("tab", name);
+  document.body.dataset.tab = name;
+  if (name === "limits") initLimits();
   if (name === "pd") renderPD();
   if (name === "matrix") renderMatrix();
   if (name === "models") renderModels();
@@ -593,7 +595,36 @@ function renderSettings() {
   renderEditTable("#netTable", "interconnects", NET_COLS);
   renderEditTable("#modelsTable", "models", MODEL_COLS);
   $("#rawJson").value = JSON.stringify(draft, null, 2);
+  loadDocs();
 }
+
+async function loadDocs() {
+  try {
+    const [p, w] = await Promise.all([api("GET", "/api/profiles"), api("GET", "/api/workloads")]);
+    $("#rawProfiles").value = JSON.stringify(p, null, 2);
+    $("#rawWorkloads").value = JSON.stringify(w, null, 2);
+  } catch (e) {
+    toast("Ошибка: " + e.message);
+  }
+}
+
+$$("[data-save-doc]").forEach((b) =>
+  b.addEventListener("click", async () => {
+    const kind = b.dataset.saveDoc;
+    const area = kind === "profiles" ? "#rawProfiles" : "#rawWorkloads";
+    const status = kind === "profiles" ? "#profStatus" : "#wlStatus";
+    try {
+      await api("PUT", "/api/" + kind, JSON.parse($(area).value));
+      $(status).className = "status";
+      $(status).textContent = "Сохранено ✓";
+      limitsState.loaded = false;
+      toast(kind === "profiles" ? "Профили сохранены" : "Нагрузки сохранены");
+    } catch (e) {
+      $(status).className = "status err";
+      $(status).textContent = e.message;
+    }
+  })
+);
 
 function renderEditTable(sel, key, cols) {
   const t = $(sel);
@@ -683,11 +714,286 @@ function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
+/* ---------- лимиты SGLang ---------- */
+const limitsState = { loaded: false, profiles: [], workloads: [], edited: false, last: null };
+const GPU_SHORT = (id) => (cfg.gpus.find((g) => g.id === id)?.name || id);
+
+async function initLimits() {
+  if (!limitsState.loaded) {
+    try {
+      const [p, w] = await Promise.all([api("GET", "/api/profiles"), api("GET", "/api/workloads")]);
+      limitsState.profiles = p.profiles || [];
+      limitsState.workloads = w.workloads || [];
+      limitsState.loaded = true;
+    } catch (e) {
+      return toast("Ошибка: " + e.message);
+    }
+    const keep = store.get("limits") || {};
+    const count = {};
+    limitsState.profiles.forEach((p) => (count[p.model] = (count[p.model] || 0) + 1));
+    const models = [...cfg.models].sort((a, b) => (count[b.id] ? 1 : 0) - (count[a.id] ? 1 : 0));
+    $("#l-model").innerHTML = models
+      .map((m) => `<option value="${esc(m.id)}">${esc(m.name)}${count[m.id] ? ` · профилей: ${count[m.id]}` : " · без замеров"}</option>`).join("");
+    $("#l-gpu").innerHTML = cfg.gpus.map((g) => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join("");
+    $("#l-workload").innerHTML = limitsState.workloads
+      .map((w) => `<option value="${esc(w.id)}">${esc(w.name)}</option>`).join("");
+    $("#l-model").value = keep.model && cfg.models.some((m) => m.id === keep.model) ? keep.model : "deepseek-v4.1-flash";
+    fillProfiles(keep.profile);
+    if (keep.gpu) $("#l-gpu").value = keep.gpu;
+    $("#l-workload").value = keep.workload && limitsState.workloads.some((w) => w.id === keep.workload) ? keep.workload : "agent";
+    for (const [id, k] of [["#l-servers", "servers"], ["#l-gpn", "gpn"], ["#l-ttft", "ttft"], ["#l-tpot", "tpot"], ["#l-headroom", "headroom"]]) {
+      if (keep[k] !== undefined && keep[k] !== null) $(id).value = keep[k];
+    }
+    fillWorkloadFields();
+  }
+  scheduleLimits();
+}
+
+function fillProfiles(keepId) {
+  const model = $("#l-model").value;
+  const list = limitsState.profiles.filter((p) => p.model === model);
+  $("#l-profile").innerHTML =
+    list.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}${p.measurements?.length ? "" : " · без замеров"}</option>`).join("") +
+    `<option value="">Без профиля — оценка по roofline</option>`;
+  $("#l-profile").value = keepId && list.some((p) => p.id === keepId) ? keepId : (list[0]?.id || "");
+  onProfileChange();
+}
+
+function onProfileChange() {
+  const p = limitsState.profiles.find((x) => x.id === $("#l-profile").value);
+  $("#l-gpu-wrap").hidden = !!p;
+  if (p) {
+    const g = cfg.gpus.find((x) => x.id === p.gpu);
+    $("#l-gpn").value = g?.gpus_per_node || 8;
+    const e = p.engine;
+    $("#l-profile-meta").innerHTML =
+      `<b>${e.gpus}×${esc(GPU_SHORT(p.gpu))}</b> на инстанс · TP ${e.tp}${e.ep ? " · EP " + e.ep : ""}${e.attn_dp ? " · DP-attn " + e.attn_dp : ""}<br>` +
+      `SGLang ${esc(e.version || "—")} · замеров: ${p.measurements?.length || 0}` +
+      (p.verified ? `<span class="badge ok">проверено</span>` : `<span class="badge est">не проверено</span>`) +
+      (p.note ? `<br><span>${esc(p.note)}</span>` : "");
+  } else {
+    $("#l-profile-meta").innerHTML = "Скорость будет оценена по характеристикам GPU (roofline), раскладка — по калькулятору памяти. Это грубая оценка.";
+  }
+}
+
+function fillWorkloadFields() {
+  const w = limitsState.workloads.find((x) => x.id === $("#l-workload").value);
+  if (!w) return;
+  const set = (d, a, b) => {
+    const fixed = d.distribution === "fixed";
+    const buckets = d.distribution === "buckets";
+    $(a).value = fixed ? d.value : buckets ? "" : d.p50;
+    $(b).value = fixed ? d.value : buckets ? "" : d.p99;
+    $(a).disabled = $(b).disabled = buckets;
+  };
+  set(w.input, "#l-in50", "#l-in99");
+  set(w.output, "#l-out50", "#l-out99");
+  $("#l-hit").value = Math.round(100 * (w.prefix_cache_hit || 0));
+  $("#l-wl-note").textContent = (w.stub ? "Заглушка. " : "") + (w.note || "") +
+    (w.input.distribution === "buckets" ? " Гистограмма — правьте во вкладке «Настройки»." : "");
+  limitsState.edited = false;
+}
+
+function limitsRequest() {
+  const w = limitsState.workloads.find((x) => x.id === $("#l-workload").value);
+  const req = {
+    profile: $("#l-profile").value || undefined,
+    model: $("#l-profile").value ? undefined : $("#l-model").value,
+    gpu: $("#l-profile").value ? undefined : $("#l-gpu").value,
+    ttft_p99_ms: (+$("#l-ttft").value || 40) * 1000,
+    tpot_p99_ms: +$("#l-tpot").value || undefined,
+    servers: +$("#l-servers").value || 1,
+    gpus_per_server: +$("#l-gpn").value || undefined,
+    headroom: (+$("#l-headroom").value || 80) / 100,
+  };
+  if (limitsState.edited && w && w.input.distribution !== "buckets") {
+    const dist = (a, b) => {
+      const p50 = +$(a).value, p99 = +$(b).value;
+      return p50 === p99 ? { distribution: "fixed", value: p50 } : { distribution: "lognormal", p50, p99: Math.max(p99, p50) };
+    };
+    req.workload_inline = {
+      id: "inline", name: "своя нагрузка", stub: false,
+      input: dist("#l-in50", "#l-in99"), output: dist("#l-out50", "#l-out99"),
+      prefix_cache_hit: Math.min(+$("#l-hit").value || 0, 99) / 100,
+    };
+  } else {
+    req.workload = $("#l-workload").value;
+  }
+  return req;
+}
+
+let limitsTimer;
+function scheduleLimits() {
+  clearTimeout(limitsTimer);
+  limitsTimer = setTimeout(renderLimits, 250);
+}
+$("#l-model").addEventListener("input", () => { fillProfiles(); scheduleLimits(); });
+$("#l-profile").addEventListener("input", () => { onProfileChange(); scheduleLimits(); });
+$("#l-workload").addEventListener("input", () => { fillWorkloadFields(); scheduleLimits(); });
+["#l-in50", "#l-in99", "#l-out50", "#l-out99", "#l-hit"].forEach((id) =>
+  $(id).addEventListener("input", () => { limitsState.edited = true; scheduleLimits(); }));
+["#l-gpu", "#l-servers", "#l-gpn", "#l-ttft", "#l-tpot", "#l-headroom"].forEach((id) => $(id).addEventListener("input", scheduleLimits));
+
+async function renderLimits() {
+  const req = limitsRequest();
+  store.set("limits", {
+    model: $("#l-model").value, profile: $("#l-profile").value, gpu: $("#l-gpu").value, workload: $("#l-workload").value,
+    servers: $("#l-servers").value, gpn: $("#l-gpn").value, ttft: $("#l-ttft").value, tpot: $("#l-tpot").value, headroom: $("#l-headroom").value,
+  });
+  $("#l-kpis").innerHTML = `<div class="kpi"><div class="label">Расчёт</div><div class="value">…</div><div class="sub">симуляция очереди SGLang</div></div>`;
+  let r;
+  try {
+    r = await api("POST", "/api/plan", req);
+  } catch (e) {
+    $("#l-kpis").innerHTML = `<div class="kpi bad" style="grid-column:1/-1"><div class="label">Ошибка</div><div class="value">${esc(e.message)}</div></div>`;
+    return;
+  }
+  limitsState.last = r;
+  $("#l-stubs").innerHTML = r.stubs.map((x) => `<div class="stub">${esc(x)}</div>`).join("");
+  renderLimitsKPIs(r);
+  renderLimitsChart(r);
+  renderLimitsTable(r);
+  renderLimitsValidation(r);
+  renderLimitsLaunch(r);
+  renderLimitsCompare(r, req);
+}
+
+const sec = (ms) => (ms >= 1000 ? nf(ms / 1000, ms < 10000 ? 1 : 0) + " с" : nf(ms) + " мс");
+
+function renderLimitsKPIs(r) {
+  const b = r.best;
+  if (!b) {
+    $("#l-kpis").innerHTML = `<div class="kpi bad" style="grid-column:1/-1"><div class="label">Цели недостижимы</div>
+      <div class="value">${esc(r.notes.find((n) => n.startsWith("цели")) || "ни один лимит не подходит")}</div></div>`;
+    return;
+  }
+  const wl = r.workload;
+  $("#l-kpis").innerHTML =
+    kpi("--max-running-requests", b.max_running_requests, `одновременно на инстанс · ограничивает: ${esc(b.limited_by)}`, "hero") +
+    kpi("Лимит RPS на инстанс", nf(r.rps_limit_per_instance, 2), `${nf(r.request.headroom * 100)}% от предела ${nf(b.max_rps, 2)} запр/с`, "accent") +
+    kpi("Инстансов", r.instances, `по ${r.profile.engine.gpus} GPU (${esc(GPU_SHORT(r.profile.gpu))})`) +
+    kpi("Лимит RPS на кластер", nf(r.rps_limit_cluster, 1), `≈ ${nf(r.rps_limit_cluster * 3600)} запросов в час`, "accent") +
+    kpi("TTFT на пределе", `${sec(b.at_max.ttft_p50_ms)} / ${sec(b.at_max.ttft_p99_ms)}`, `P50 / P99, цель P99 ≤ ${sec(r.request.ttft_p99_ms)}`) +
+    kpi("TPOT на пределе", `${nf(b.at_max.tpot_p50_ms, 1)} / ${nf(b.at_max.tpot_p99_ms, 1)} мс`, `P50 / P99${r.request.tpot_p99_ms ? `, цель ≤ ${nf(r.request.tpot_p99_ms)} мс` : " — цель не задана"}`) +
+    kpi("Генерация (кластер)", fmt.big(r.output_tokens_per_hour_cluster), `токенов в час при лимите · вход ~${fmt.tok(Math.round(r.workload_mean_input))}, выход ~${fmt.tok(Math.round(r.workload_mean_output))}`);
+}
+
+function renderLimitsChart(r) {
+  const pts = r.curve || [];
+  if (!pts.length) { $("#l-chart").innerHTML = ""; return; }
+  const W = 760, H = 280, L = 56, R = 16, T = 14, B = 40;
+  const xs = pts.map((p) => p.rps), ys = pts.map((p) => Math.max(p.ttft_p99_ms, 1));
+  const slo = r.request.ttft_p99_ms;
+  const xmax = Math.max(...xs) * 1.02;
+  const ymin = Math.max(Math.min(...ys, slo) / 2, 10), ymax = Math.max(...ys, slo) * 1.6;
+  const X = (v) => L + (v / xmax) * (W - L - R);
+  const Y = (v) => T + (1 - (Math.log10(v) - Math.log10(ymin)) / (Math.log10(ymax) - Math.log10(ymin))) * (H - T - B);
+  const ticksY = [];
+  for (let e = Math.floor(Math.log10(ymin)); e <= Math.ceil(Math.log10(ymax)); e++) {
+    for (const m of [1, 3]) { const v = m * 10 ** e; if (v >= ymin && v <= ymax) ticksY.push(v); }
+  }
+  const ticksX = Array.from({ length: 6 }, (_, i) => (xmax * i) / 5);
+  const path = pts.map((p, i) => `${i ? "L" : "M"}${X(p.rps).toFixed(1)},${Y(Math.max(p.ttft_p99_ms, 1)).toFixed(1)}`).join("");
+  const path50 = pts.map((p, i) => `${i ? "L" : "M"}${X(p.rps).toFixed(1)},${Y(Math.max(p.ttft_p50_ms, ymin)).toFixed(1)}`).join("");
+  const lim = r.rps_limit_per_instance, mx = r.best?.max_rps;
+  $("#l-chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="TTFT P99 от RPS">
+    ${ticksY.map((v) => `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${sec(v)}</text>`).join("")}
+    ${ticksX.map((v) => `<text x="${X(v)}" y="${H - B + 16}" text-anchor="middle">${nf(v, xmax < 5 ? 2 : 1)}</text>`).join("")}
+    <line class="axis" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/>
+    <text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle">RPS на инстанс</text>
+    <line class="slo" x1="${L}" x2="${W - R}" y1="${Y(slo)}" y2="${Y(slo)}"/>
+    <text x="${W - R - 4}" y="${Y(slo) - 6}" text-anchor="end" style="fill:var(--bad)">цель TTFT P99 ${sec(slo)}</text>
+    ${mx ? `<line class="lim" x1="${X(lim)}" x2="${X(lim)}" y1="${T}" y2="${H - B}"/><text x="${X(lim) + 4}" y="${T + 12}" style="fill:var(--ok)">лимит ${nf(lim, 2)}</text>` : ""}
+    <path class="line2" d="${path50}"/>
+    <path class="line" d="${path}"/>
+    ${pts.map((p) => `<circle class="dot ${p.stable && p.ttft_p99_ms <= slo ? "" : "bad"}" cx="${X(p.rps)}" cy="${Y(Math.max(p.ttft_p99_ms, 1))}" r="4"><title>RPS ${nf(p.rps, 2)}: TTFT P99 ${sec(p.ttft_p99_ms)}, P50 ${sec(p.ttft_p50_ms)}, TPOT P99 ${nf(p.tpot_p99_ms, 1)} мс, одновременно ~${nf(p.mean_running)}${p.stable ? "" : " · очередь растёт"}</title></circle>`).join("")}
+  </svg>`;
+  $("#l-chart-hint").textContent = `--max-running-requests ${r.best?.max_running_requests} · сплошная — P99, пунктир — P50 · красные точки — цель нарушена`;
+}
+
+function renderLimitsTable(r) {
+  const bestMRR = r.best?.max_running_requests;
+  $("#l-table").innerHTML = `<thead><tr><th>--max-running-requests</th><th>Предел RPS на инстанс</th><th>На кластер</th>
+    <th>TTFT P50</th><th>TTFT P99</th><th>TPOT P50</th><th>TPOT P99</th><th>Одновременно в среднем</th><th>Генерация, ток/с</th><th>Что ограничивает</th></tr></thead><tbody>` +
+    r.rows.map((x) => x.feasible
+      ? `<tr class="${x.max_running_requests === bestMRR ? "best-row" : ""}">
+        <td><b>${x.max_running_requests}</b>${x.max_running_requests === bestMRR ? '<span class="best">рекомендуется</span>' : ""}</td>
+        <td>${nf(x.max_rps, 2)}</td><td>${nf(x.max_rps * r.instances, 1)}</td>
+        <td>${sec(x.at_max.ttft_p50_ms)}</td><td>${sec(x.at_max.ttft_p99_ms)}</td>
+        <td>${nf(x.at_max.tpot_p50_ms, 1)} мс</td><td>${nf(x.at_max.tpot_p99_ms, 1)} мс</td>
+        <td>${nf(x.at_max.mean_running)}</td><td>${nf(x.at_max.output_tok_s)}</td><td class="muted">${esc(x.limited_by)}</td></tr>`
+      : `<tr class="off"><td><b>${x.max_running_requests}</b></td><td colspan="9" class="muted">цели недостижимы: ${esc(x.limited_by)}</td></tr>`).join("") + `</tbody>`;
+}
+
+function errCls(v) {
+  const a = Math.abs(v);
+  return a <= 20 ? "err-ok" : a <= 50 ? "err-mid" : "err-bad";
+}
+
+function renderLimitsValidation(r) {
+  const v = r.validation || [];
+  $("#l-fit-hint").textContent = v.length
+    ? `средняя ошибка: TTFT ${nf(r.validation_ttft_mape_pct)}%, TPOT ${nf(r.validation_tpot_mape_pct)}% · источник скорости: ${r.fit.source}`
+    : `замеров нет · источник скорости: ${r.fit.source}`;
+  $("#l-valid").innerHTML = v.length
+    ? `<thead><tr><th>Параллельность</th><th>Вход → выход</th><th>TTFT замер</th><th>TTFT модель</th><th>Ошибка</th><th>TPOT замер</th><th>TPOT модель</th><th>Ошибка</th></tr></thead><tbody>` +
+      v.map((x) => `<tr><td>${x.concurrency}</td><td>${fmt.tok(x.isl)} → ${fmt.tok(x.osl)}</td>
+        <td>${sec(x.measured_ttft_ms)}</td><td>${sec(x.pred_ttft_ms)}</td><td class="${errCls(x.err_ttft_pct)}">${x.err_ttft_pct > 0 ? "+" : ""}${nf(x.err_ttft_pct)}%</td>
+        <td>${nf(x.measured_tpot_ms, 2)} мс</td><td>${nf(x.pred_tpot_ms, 2)} мс</td><td class="${errCls(x.err_tpot_pct)}">${x.err_tpot_pct > 0 ? "+" : ""}${nf(x.err_tpot_pct)}%</td></tr>`).join("") + `</tbody>`
+    : "";
+  const p = r.perf;
+  $("#l-fit").innerHTML =
+    `Сверка: симуляция того же бенчмарка (bench_serving, фиксированная параллельность). Если точек всего две, совпадение TPOT не независимая проверка, а подгонка.<br>` +
+    `Подгонка: ${r.fit.details.map(esc).join("; ")}.<br>` +
+    `Модель: шаг decode = ${nf(p.decode_base_ms, 2)} мс + n × (${nf(p.decode_per_req_ms, 3)} + ${nf(p.decode_per_req_per_kctx_ms, 4)} × контекст/1000) мс; ` +
+    `prefill ≈ ${fmt.big(p.prefill_tok_s)} токенов/с, ${nf(p.prefill_overhead_ms)} мс на батч + ${nf(p.prefill_per_req_ms, 1)} мс на запрос.`;
+}
+
+function renderLimitsLaunch(r) {
+  $("#l-launch").textContent = r.launch;
+  const e = r.profile.engine, c = r.capacity;
+  $("#l-engine").innerHTML = `
+    <span>SGLang <b>${esc(e.version || "—")}</b></span>
+    ${e.image ? `<span>образ <b>${esc(e.image)}</b></span>` : ""}
+    <span>GPU на инстанс <b>${e.gpus}</b></span>
+    <span>KV-пул <b>${fmt.big(c.kv_pool_tokens)}</b> токенов (${esc(c.source)})</span>
+    ${c.state_slots ? `<span>слотов state <b>${c.state_slots}</b></span>` : ""}
+    <span>веса на GPU <b>${fmt.gb(c.weights_gb_per_gpu)}</b></span>`;
+  const src = r.profile.source;
+  $("#l-source").hidden = !src;
+  if (src) $("#l-source").href = src;
+  $("#l-notes").innerHTML = (r.notes || []).map((n) => `<li>${esc(n)}</li>`).join("");
+}
+
+async function renderLimitsCompare(r, req) {
+  const id = r.profile.id;
+  const sib = id.endsWith("-engram-host") ? id.replace(/-engram-host$/, "") : id + "-engram-host";
+  const other = limitsState.profiles.find((p) => p.id === sib);
+  if (!other) { $("#l-compare-panel").hidden = true; return; }
+  $("#l-compare-panel").hidden = false;
+  $("#l-compare-title").textContent = "Engram на GPU или в RAM хоста";
+  let o;
+  try {
+    o = await api("POST", "/api/plan", { ...req, profile: sib });
+  } catch (e) {
+    return;
+  }
+  const row = (x, label) => `<tr><td>${label}</td><td>${fmt.big(x.capacity.kv_pool_tokens)}</td><td>${fmt.gb(x.capacity.weights_gb_per_gpu)}</td>
+    <td>${x.best ? x.best.max_running_requests : "—"}</td><td>${x.best ? nf(x.rps_limit_per_instance, 2) : "—"}</td><td>${x.best ? nf(x.rps_limit_cluster, 1) : "—"}</td>
+    <td>${x.best ? sec(x.best.at_max.ttft_p99_ms) : "—"}</td><td>${x.best ? nf(x.best.at_max.kv_peak_pct, 1) + "%" : "—"}</td></tr>`;
+  const [gpu, host] = id.endsWith("-engram-host") ? [o, r] : [r, o];
+  $("#l-compare").innerHTML = `<thead><tr><th>Вариант</th><th>KV-пул, токенов</th><th>Веса на GPU</th><th>--max-running-requests</th>
+    <th>Лимит RPS на инстанс</th><th>На кластер</th><th>TTFT P99</th><th>Пик занятости KV</th></tr></thead><tbody>` +
+    row(gpu, "Engram на GPU (по умолчанию)") + row(host, "Engram в RAM хоста (SGLANG_ENABLE_DSV41_ENGRAM_HOST_TABLE=1)") + `</tbody>` +
+    `<caption class="muted small" style="caption-side:bottom;text-align:left;padding-top:8px">Вынос Engram освобождает HBM под KV-пул. Если пик занятости KV далёк от 100%, лимиты не меняются. Влияние выноса на скорость не измерено — в профиле стоит множитель 1,0 (заглушка).</caption>`;
+}
+
 /* ---------- запуск ---------- */
 (async function init() {
   cfg = await api("GET", "/api/config");
   fillSelects();
   await calculate();
   const tab = store.get("tab");
+  document.body.dataset.tab = "calc";
   if (tab && tab !== "calc") showTab(tab);
 })();
