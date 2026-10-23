@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Калькулятор GPU для MIP</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='3' y='7' width='26' height='18' rx='4' fill='%235aa9e6'/><rect x='8' y='12' width='5' height='8' rx='1' fill='white'/><rect x='15' y='12' width='5' height='8' rx='1' fill='white' opacity='.7'/><rect x='22' y='12' width='3' height='8' rx='1' fill='white' opacity='.4'/></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="logo" aria-hidden="true"></span>
+    <div>
+      <div class="brand-name">MIP <span>Калькулятор GPU</span></div>
+      <div class="brand-sub" id="platformName">Платформа управляемого инференса</div>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="calc">Калькулятор</button>
+    <button class="tab" data-tab="pd">Prefill / Decode</button>
+    <button class="tab" data-tab="models">Модели</button>
+    <button class="tab" data-tab="matrix">Матрица</button>
+    <button class="tab" data-tab="settings">Настройки</button>
+    <button class="tab" data-tab="mcp">MCP</button>
+  </nav>
+</header>
+
+<main>
+  <div class="layout">
+    <aside class="panel form" id="form">
+      <h2>Параметры</h2>
+      <label>Модель <select id="f-model"></select></label>
+      <div class="model-meta" id="modelMeta"></div>
+      <label>GPU <select id="f-gpu"></select></label>
+      <div class="row2">
+        <label>Веса <select id="f-precision"></select></label>
+        <label>KV-кэш <select id="f-kv">
+          <option>fp8</option><option>bf16</option>
+        </select></label>
+      </div>
+      <label>Контекст на запрос <output id="o-ctx"></output>
+        <input type="range" id="f-ctx" min="0" max="9" step="1">
+      </label>
+      <label>Параллельных запросов на реплику
+        <input type="number" id="f-conc" min="1" max="4096">
+      </label>
+      <div class="row2">
+        <label>Реплик <input type="number" id="f-rep" min="1" max="256"></label>
+        <label>Доля VRAM <input type="number" id="f-util" min="0.5" max="1" step="0.01"></label>
+      </div>
+
+      <h3>Нагрузка</h3>
+      <div class="row2">
+        <label>Токенов на входе <input type="number" id="f-in" min="1" step="256"></label>
+        <label>Токенов на выходе <input type="number" id="f-out" min="1" step="64"></label>
+      </div>
+      <label>Сеть между нодами <select id="f-net"></select></label>
+      <label>Цель TTFT, мс <input type="number" id="f-slo" min="0" step="100" placeholder="без ограничения"></label>
+    </aside>
+
+    <div class="content">
+      <!-- Калькулятор -->
+      <section class="view active" id="view-calc">
+        <div class="kpis" id="kpis"></div>
+        <div class="costs" id="costs"></div>
+        <div class="warnings" id="warnings"></div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Память одной GPU</h2>
+            <div class="legend">
+              <span><i class="sw w"></i>Веса</span>
+              <span><i class="sw kv"></i>KV-кэш</span>
+              <span><i class="sw ov"></i>Накладные</span>
+              <span><i class="sw fr"></i>Свободно</span>
+              <span><i class="sw rs"></i>Резерв</span>
+            </div>
+          </div>
+          <div class="membar" id="membar"></div>
+          <div class="memnums" id="memnums"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Кластер</h2>
+            <span class="muted" id="clusterHint"></span>
+          </div>
+          <div class="cluster" id="cluster"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Сравнение GPU: ₽ за 1 млн токенов</h2>
+            <span class="muted">клик — выбрать GPU</span>
+          </div>
+          <div class="compare" id="compare"></div>
+        </div>
+      </section>
+
+      <!-- Prefill / Decode -->
+      <section class="view" id="view-pd">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Совмещённый режим или раздельные пулы prefill / decode</h2>
+            <span class="muted small" id="pdHint"></span>
+          </div>
+          <p class="muted small explain">
+            <b>Совмещённый режим:</b> одни и те же GPU обрабатывают prompt (prefill) и генерируют ответ (decode). Prefill прерывает генерацию.
+            <b>Раздельный P/D:</b> prompt обрабатывает отдельный пул GPU, а готовый KV-кэш передаётся по сети (NVLink, InfiniBand или RoCE с RDMA, либо TCP) в пул decode.
+            Пул decode берётся из параметров слева, пул prefill подбирается так, чтобы его загрузить.
+          </p>
+          <div class="flow" id="pdFlow"></div>
+        </div>
+        <div class="pd-summary" id="pdSummary"></div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Альтернативы: GPU под prefill × сеть</h2>
+            <span class="muted small">сортировка: укладывается в цель TTFT → дешевле за 1 млн токенов</span>
+          </div>
+          <div class="table-wrap"><table class="alts" id="pdTable"></table></div>
+        </div>
+      </section>
+
+      <!-- Модели -->
+      <section class="view" id="view-models">
+        <div class="panel-head models-head">
+          <div>
+            <h2>Ключевые метрики моделей</h2>
+            <span class="muted small">Данные из config.json и карточек моделей на Hugging Face. KV-кэш в FP8. Клик по карточке — открыть расчёт.</span>
+          </div>
+          <label class="sort">Сортировка
+            <select id="m-sort">
+              <option value="total_params_b">по числу параметров</option>
+              <option value="active_params_b">по активным параметрам</option>
+              <option value="native">по размеру чекпоинта</option>
+              <option value="kv">по KV на 1 млн токенов</option>
+              <option value="max_context">по контексту</option>
+            </select>
+          </label>
+        </div>
+        <div class="mcards" id="mcards"></div>
+      </section>
+
+      <!-- Матрица -->
+      <section class="view" id="view-matrix">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>GPU на реплику и ₽ за 1 млн токенов: модели × GPU</h2>
+            <span class="muted" id="matrixHint"></span>
+          </div>
+          <div class="table-wrap"><table class="matrix" id="matrix"></table></div>
+          <p class="muted small">Параметры нагрузки берутся из панели слева. Клик по ячейке открывает расчёт.</p>
+        </div>
+      </section>
+
+      <!-- Настройки -->
+      <section class="view" id="view-settings">
+        <div class="settings-bar panel">
+          <div>
+            <h2>Настройки MIP</h2>
+            <span class="muted small">Хранятся в <code>config.json</code>. Файл можно править вручную — изменения подхватятся автоматически.</span>
+          </div>
+          <div class="actions">
+            <span class="status" id="saveStatus"></span>
+            <button class="btn ghost" id="btnReload">Отменить изменения</button>
+            <button class="btn" id="btnSave">Сохранить</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Платформа</h2>
+          <div class="grid-form" id="platformForm"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>GPU</h2>
+            <button class="btn ghost small" data-add="gpus">+ GPU</button>
+          </div>
+          <div class="table-wrap"><table class="edit" id="gpusTable"></table></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Сеть (интерконнект)</h2>
+            <button class="btn ghost small" data-add="interconnects">+ Сеть</button>
+          </div>
+          <div class="table-wrap"><table class="edit" id="netTable"></table></div>
+          <p class="muted small">Используется для передачи KV-кэша между пулами prefill и decode и для конвейерного параллелизма (PP) между нодами. Цена — за ноду в час (сетевые карты и порты коммутатора).</p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Модели</h2>
+            <button class="btn ghost small" data-add="models">+ Модель</button>
+          </div>
+          <div class="table-wrap"><table class="edit" id="modelsTable"></table></div>
+          <p class="muted small">
+            <b>gqa</b>: KV = 2 × слоёв с KV × KV-голов × размер головы × байт. <b>mla</b>: KV = слоёв с KV × (ранг + RoPE) × байт.
+            «Слоёв с KV» = 0 — все слои. «KV, Б/токен (вручную)» задаётся в bf16 и важнее архитектуры.
+          </p>
+        </div>
+
+        <details class="panel">
+          <summary><h2>JSON целиком</h2></summary>
+          <textarea id="rawJson" spellcheck="false"></textarea>
+          <div class="actions"><button class="btn ghost" id="btnApplyRaw">Применить JSON к форме</button></div>
+        </details>
+      </section>
+
+      <!-- MCP -->
+      <section class="view" id="view-mcp">
+        <div class="panel">
+          <h2>MCP-сервер для агентов</h2>
+          <p>Адрес Streamable HTTP: <code id="mcpUrl"></code></p>
+          <h3>Claude Code</h3>
+          <pre id="mcpClaude"></pre>
+          <h3>stdio (Claude Desktop, Cursor и другие)</h3>
+          <pre id="mcpStdio"></pre>
+          <h3>Инструменты</h3>
+          <div id="mcpTools" class="tools"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
